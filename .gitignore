@@ -127,3 +127,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+### JetBrains ###
+/.idea
+backend-server/.idea
+
+### NYC ###
+backend-server/.nyc_output
+
+### Node Modules ###
+backend-server/node_modules
