@@ -1,0 +1,31 @@
+{
+  "name": "clueless-server",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "npm run lint && npm run coverage",
+    "jasmine": "jasmine JASMINE_CONFIG_PATH=tests/jasmine.json",
+    "generate": "node generate.js",
+    "coverage": "npm run generate  && nyc npm run jasmine",
+    "lint": "eslint routes handlers app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "socket.io": "^3.1.2"
+  },
+  "devDependencies": {
+    "eslint": "^7.21.0",
+    "eslint-config-google": "^0.14.0",
+    "glob": "^7.1.6",
+    "jasmine": "^3.6.4",
+    "nyc": "^15.1.0"
+  }
+}
