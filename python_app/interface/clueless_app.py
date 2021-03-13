@@ -92,5 +92,7 @@ class Clueless:
 
     def help(self):
         """Print out help message descriping action selection"""
+        # pylint: disable=no-self-use
+        # Member function to match format of other Option funcitons
         print('\nTo select a move, enter a command or command number.')
         print('Examples:\n\t1\n\tAbout')
