@@ -9,6 +9,7 @@ app.use(bodyParser.json());
 
 // Routes
 app.use('/', require('./routes/index.js'));
+app.use('/games/', require('./routes/games.js'));
 
 // Sockets Stuff, setup isn't up to date.
 global.clients = [];
