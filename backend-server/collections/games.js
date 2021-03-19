@@ -1,3 +1,4 @@
+const {suspects} = require("./suspects");
 const {Player} = require("../models/player");
 const {Game} = require("../models/game");
 
@@ -13,6 +14,7 @@ exports.addGame = (attributes) => {
 exports.joinGame = ({gameId, username}) => {
   let game = findGame(gameId)
   if (game){
+    if (game.players.length > 6) throw new Error('Lobby is full.');
     if (game.status !== 'waiting') throw new Error('Game has already started.')
     if (game.players.some((player) => player.username === username)) throw new Error('Username already in game.');
 
@@ -29,6 +31,21 @@ exports.startGame = ({gameId}) => {
   }
 }
 
+exports.setSuspect = ({gameId, uuid,  suspect}) => {
+  let game = findGame(gameId)
+  if (game) {
+    if (game.status !== 'waiting') throw new Error('Game has already started.')
+    if (!suspects.includes(suspect)) throw new Error('Not a valid suspect.')
+    if (game.players.some(player => player.suspect === suspect)) throw new Error('Suspect already taken.')
+
+    let player = game.players.find(player => player.uuid === uuid)
+    if (player) {
+      player.suspect = suspect
+      return player;
+    }
+  }
+}
+
 // Private
 
 const newId = () => {
@@ -37,6 +54,6 @@ const newId = () => {
   return ++max
 }
 
-function findGame(gameId) {
+const findGame = (gameId) => {
   return games.find((game) => game["id"] === gameId)
 }
