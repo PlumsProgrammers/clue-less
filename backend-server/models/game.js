@@ -1,3 +1,4 @@
+const {Turn} = require("./turn");
 const {suspects} = require("../collections/suspects");
 const {shuffle} = require("../helpers/cardManagement");
 const {suspectCards, weaponCards, roomCards} = require("../collections/cards");
@@ -10,15 +11,19 @@ const Game = class Game{
     this.players = [];
     this.solution = {};
     this.turn = {};
+    this.winner = null;
   }
 
   start = () => {
     if (this.players.length < 3) throw new Error('Not enough players.')
+    if (this.status !== 'waiting') throw new Error('Game already started.')
 
     this.status = 'starting' // No Longer accepts more players
     this.autoAssignSuspects();
     this.setupPlayerLocations();
     this.setupCards();
+    this.setupTurn();
+    this.status = 'playing'
   }
 
   autoAssignSuspects = () => {
@@ -39,9 +44,9 @@ const Game = class Game{
     let suspects = shuffle(suspectCards);
     let weapons = shuffle(weaponCards);
     let rooms = shuffle(roomCards);
-    this.solution['suspect'] = suspects.pop()
-    this.solution['weapons'] = weapons.pop()
-    this.solution['room'] = rooms.pop()
+    this.solution['suspect'] = suspects.pop().name
+    this.solution['weapon'] = weapons.pop().name
+    this.solution['room'] = rooms.pop().name
     let deck = shuffle(suspects.concat(weapons, rooms));
     this.dealCards(deck)
   }
@@ -50,5 +55,7 @@ const Game = class Game{
     let i = 0
     while(deck.length) this.players[i++ % this.players.length].cards.push(deck.pop())
   }
+
+  setupTurn = () => this.turn = new Turn(this.players)
 }
 exports.Game = Game;

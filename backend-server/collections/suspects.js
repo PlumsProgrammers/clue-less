@@ -1,27 +1,28 @@
+const {locations} = require("./locations");
 exports.suspects = [
   {
     name: 'Miss Scarlet',
-    startingLocation: 'Hall-Lounge-Hallway',
+    startingLocation: locations.find(location => location.name === 'Hall-Lounge-Hallway'),
     color: 'red'
   }, {
     name: 'Mr. Green',
-    startingLocation: 'Ballroom-Conservatory-Hallway',
+    startingLocation: locations.find(location => location.name === 'Ballroom-Conservatory-Hallway'),
     color: 'green'
   }, {
     name: 'Colonel Mustard',
-    startingLocation: 'Dining Room-Lounge-Hallway',
+    startingLocation: locations.find(location => location.name === 'Dining Room-Lounge-Hallway'),
     color: 'yellow'
   }, {
     name: 'Professor Plum',
-    startingLocation: 'Library-Study-Hallway',
+    startingLocation: locations.find(location => location.name === 'Library-Study-Hallway'),
     color: 'purple'
   }, {
     name: 'Mrs. Peacock',
-    startingLocation: 'Conservatory-Library-Hallway',
+    startingLocation: locations.find(location => location.name === 'Conservatory-Library-Hallway'),
     color: 'blue'
   }, {
     name: 'Mrs. White',
-    startingLocation: 'Ballroom-Kitchen-Hallway',
+    startingLocation: locations.find(location => location.name === 'Ballroom-Kitchen-Hallway'),
     color: 'white'
   }
 ]

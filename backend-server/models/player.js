@@ -7,5 +7,16 @@ exports.Player = class {
     this.cards = []
     this.suspect = ''
     this.location = ''
+    this.failed = false
+  }
+
+  roomName = () => this.uuid;
+  toJSON = () => {
+    return {
+      username: this.username,
+      suspect: this.suspect,
+      location: this.location,
+      failed: this.failed
+    }
   }
 }

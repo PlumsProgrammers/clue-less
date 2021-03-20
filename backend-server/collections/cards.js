@@ -3,7 +3,7 @@ const {suspects} = require("./suspects");
 const {locations} = require("./locations");
 
 const suspectList = suspects.map(suspect => suspect.name)
-const roomList = locations.filter(location => location.suggestions).map(location => location.name)
+const roomList = locations.filter(location => location.suggestionsAllowed).map(location => location.name)
 const weaponList = ['Candlestick', 'Dagger', 'Lead Pipe', 'Revolver', 'Rope', 'Wrench']
 
 exports.suspectCards = suspectList.map(suspect => new Card(suspect, 'suspect'))

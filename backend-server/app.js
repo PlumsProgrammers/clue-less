@@ -10,6 +10,7 @@ app.use(bodyParser.json());
 // Routes
 app.use('/', require('./routes/index.js'));
 app.use('/games/', require('./routes/games.js'));
+app.use('/gameplay/', require('./routes/gameplay.js'));
 app.use('/players/', require('./routes/players.js'));
 
 // Sockets Stuff, setup isn't up to date.
