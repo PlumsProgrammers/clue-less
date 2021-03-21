@@ -15,6 +15,7 @@ exports.Player = class {
     return {
       username: this.username,
       uuid: this.uuid,
+      cards: this.cards,
       suspect: this.suspect,
       location: this.location,
       failed: this.failed
