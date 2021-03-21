@@ -8,7 +8,7 @@ module.exports = (req, res) => {
     try {
       res.json(makeAccusation(_.pick(req.body, requiredParams)));
     } catch(e) {
-      res.status(300)
+      res.status(400)
       res.json(e.message)
     }
   } else {

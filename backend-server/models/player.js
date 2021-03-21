@@ -14,6 +14,7 @@ exports.Player = class {
   toJSON = () => {
     return {
       username: this.username,
+      uuid: this.uuid,
       suspect: this.suspect,
       location: this.location,
       failed: this.failed

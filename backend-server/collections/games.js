@@ -14,74 +14,71 @@ exports.addGame = (attributes) => {
 
 exports.joinGame = ({gameId, username}) => {
   let game = findGame(gameId)
-  if (game){
-    if (game.players.length > 6) throw new Error('Lobby is full.');
-    if (game.status !== 'waiting') throw new Error('Game has already started.')
-    if (game.players.some((player) => player.username === username)) throw new Error('Username already in game.');
+  if (!game) throw new Error("Game not found.")
+  if (game.players.length > 6) throw new Error('Lobby is full.');
+  if (game.status !== 'waiting') throw new Error('Game has already started.');
+  if (game.players.some((player) => player.username === username)) throw new Error('Username already in game.');
 
-    game.players.push(new Player(username))
-    return game
-  }
+  game.players.push(new Player(username))
+  return game;
 }
 
 exports.startGame = ({gameId}) => {
   let game = findGame(gameId)
-  if (game) {
-    game.start()
-    return game
-  }
+  if (!game) throw new Error("Game not found.")
+
+  game.start()
+  return game;
 }
 
-exports.setSuspect = ({gameId, uuid,  suspect}) => {
+exports.setSuspect = ({gameId, username,  suspect}) => {
   let game = findGame(gameId)
-  if (game) {
-    if (game.status !== 'waiting') throw new Error('Game has already started.')
-    if (!suspects.includes(suspect)) throw new Error('Not a valid suspect.')
-    if (game.players.some(player => player.suspect === suspect)) throw new Error('Suspect already taken.')
+  if (!game) throw new Error("Game not found.")
+  if (game.status !== 'waiting') throw new Error('Game has already started.')
+  if (!suspects.map(suspect => suspect.name).includes(suspect)) throw new Error('Not a valid suspect.')
+  if (game.players.some(player => player.suspect === suspect)) throw new Error('Suspect already taken.')
 
-    let player = game.players.find(player => player.uuid === uuid)
-    if (player) {
-      player.suspect = suspect
-      return player;
-    }
-  }
+  let player = game.players.find(player => player.username === username)
+  if (!player) throw new Error("Player not found.")
+
+  player.suspect = suspect
+  return player;
 }
 
 exports.movePlayer =  ({gameId, username, location}) => {
   let game = findGame(gameId)
-  if (game) {
-    if (game.state !== 'playing') throw new Error("Game is not in progress.")
-    if (game.turn.currentPlayer.username !== username) throw new Error("Not your turn.")
-    if (game.turn.phase !== turnPhases.SUGGESTION) throw new Error("Already moved or made a suggestion.")
-    if (game.turn.currentPlayer.location.canMoveTo(location))
-      throw new Error(`You can not move there. Possible movements are: ${game.turn.currentPlayer.location.possibleMovements}`)
+  if (!game) throw new Error("Game not found.")
+  if (game.state !== 'playing') throw new Error("Game is not in progress.")
+  if (game.turn.currentPlayer.username !== username) throw new Error("Not your turn.")
+  if (game.turn.phase !== turnPhases.SUGGESTION) throw new Error("Already moved or made a suggestion.")
+  if (game.turn.currentPlayer.location.canMoveTo(location))
+    throw new Error(`You can not move there. Possible movements are: ${game.turn.currentPlayer.location.possibleMovements}`)
 
-    game.turn.movePlayer(location)
-  }
+  game.turn.movePlayer(location)
+  return game.turn.currentPlayer;
 }
 
 exports.makeAccusation =  ({gameId, username, accusation}) => {
   let game = findGame(gameId)
-  if (game) {
-    if (game.status !== 'playing') throw new Error("Game is not in progress.")
-    if (game.turn.currentPlayer.username !== username) throw new Error("Not your turn.")
+  let guessingPlayer = game.turn.currentPlayer
+  if (!game) throw new Error("Game not found.")
+  if (game.status !== 'playing') throw new Error("Game is not in progress.")
+  if (game.turn.currentPlayer.username !== username) throw new Error("Not your turn.")
 
-    if (checkSolution(accusation, game.solution)) {
-      game.status = 'Finished'
-      game.winner = game.turn.currentPlayer
-      return `${game.turn.currentPlayer.username} has won!`
-    } else {
-      let guessingPlayer = game.turn.currentPlayer
-      guessingPlayer.failed = true
-      if (game.players.some(player => player.failed === false)) {
-        game.turn.nextPlayer()
-        return `${guessingPlayer.username} made a bad guess and has failed`
-      } else {
-        game.status = 'Finished'
-        return 'Everyone has failed, the game ends with no winner.'
-      }
-    }
+  if (checkSolution(accusation, game.solution)) {
+    game.status = 'Finished'
+    game.winner = game.turn.currentPlayer
+    return `${guessingPlayer.username} has won!`
   }
+
+  guessingPlayer.failed = true
+  if (game.players.some(player => player.failed === false)) {
+    game.turn.nextPlayer()
+    return `${guessingPlayer.username} made a bad guess and has failed`
+  }
+
+  game.status = 'Finished'
+  return 'Everyone has failed, the game ends with no winner.'
 }
 
 // Private
