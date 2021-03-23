@@ -29,8 +29,10 @@ class Routes(Enum):
     CREATE_GAME = 2
     JOIN_GAME = 3
     START_GAME = 4
+    CHECK_GAME_STATUS = 5
 
-    SET_CHARACTER = 5
+    SET_CHARACTER = 6
+    ACCUSATION = 7
 
 
 class Router:
@@ -49,19 +51,27 @@ class Router:
                       Routes.TEST_CONNECTION: 'test_connection',
 
                       Routes.CREATE_GAME: 'games',
+                      Routes.CHECK_GAME_STATUS: 'games',
                       Routes.JOIN_GAME: 'games/join',
                       Routes.START_GAME: 'games/start',
 
-                      Routes.SET_CHARACTER: 'players/selectSuspect'}
+                      Routes.SET_CHARACTER: 'players/selectSuspect',
+
+                      Routes.ACCUSATION: 'gameplay/accusation'}
 
     def get_json_params(self, player, route=None):
         """Sets dictionary for getting require JSON params"""
-        self.json_params = {Routes.CREATE_GAME: {'name': player.username},
+        self.json_params = {Routes.CREATE_GAME: {'name': player.game_name},
                             Routes.JOIN_GAME: {'username': player.username,
                                                'gameId': player.game_id},
                             Routes.START_GAME: {'gameId': player.game_id},
                             Routes.SET_CHARACTER: {'gameId': player.game_id,
                                                    'uuid': player.uuid,
-                                                   'suspect': player.suspect}
+                                                   'suspect': player.suspect},
+                            Routes.ACCUSATION: {'gameId': player.game_id,
+                                                'username': player.username,
+                                                'accusation': {'suspect': player.guess[0],
+                                                               'weapon': player.guess[1],
+                                                               'room': player.guess[2]}}
                             }
         return self.json_params.get(route, None)

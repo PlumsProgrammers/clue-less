@@ -5,7 +5,7 @@ import os
 import requests
 
 from interface.config import ConfigManager, Router, Routes
-from interface.game_objects import Player
+from interface.game_objects import Player, Rooms, Suspects, Weapons
 
 
 class Clueless:
@@ -40,7 +40,7 @@ class Clueless:
                 print(test_page.content.decode("utf-8"))
         except requests.exceptions.ConnectionError:
             print('Clue-less Server not Found, please check connection')
-            return False
+        return False
 
     def run(self):
         """Runs main game loop until exit conditions met"""
@@ -55,6 +55,8 @@ class Clueless:
                 options = self.get_valid_options('find_game')
             elif self.player.status == 'waiting':
                 options = self.get_valid_options('waiting')
+            elif self.player.status == 'playing':
+                options = self.get_valid_options('playing')
 
             option_list = list(options.keys())
             print('\nSelect your action')
@@ -94,6 +96,10 @@ class Clueless:
 
         if current_status == 'waiting':
             options['start game'] = self.start_game
+            options['check game status'] = self.check_game_status
+
+        if current_status == 'playing':
+            options['make accusation'] = self.make_accusation
 
         # Always availible, last in list
         options['about'] = self.about
@@ -104,14 +110,14 @@ class Clueless:
 
     def create_game(self):
         """Create new Clue-less Game server instance"""
-        username = ''
+        game_name = ''
         print('Creating new Game')
-        while not username:
-            username = input(
-                'Please Provide the username you would like to use:\n')
+        while not game_name:
+            game_name = input(
+                'Please Provide the Game Name you would like to use:\n')
 
-            if username:
-                self.player.username = username
+            if game_name:
+                self.player.game_name = game_name
                 create_game_path = os.path.join(self._config.get_host(),
                                                 self.router.paths[Routes.CREATE_GAME])
                 response = requests.post(create_game_path,
@@ -127,7 +133,7 @@ class Clueless:
                 else:
                     if response.status_code == 400:
                         print(response.json())
-                    username = ''
+                    game_name = ''
 
     def join_game(self):
         """Join Existing Clue-less Game server instance"""
@@ -179,6 +185,46 @@ class Clueless:
             print('Could not start Game')
             if response.status_code == 400:
                 print(response.json())
+
+    def check_game_status(self):
+        """Checks game status to see if game has started"""
+        check_game_path = os.path.join(self._config.get_host(),
+                                       self.router.paths[Routes.CHECK_GAME_STATUS])
+        response = requests.get(check_game_path)
+        if response.status_code == 200:
+            games = response.json()
+            for game in games:
+                if game['id'] == self.player.game_id:
+                    self.player.status = game['status']
+                    print(f'Game Status: {self.player.status}')
+        else:
+            print('Could not find game')
+
+    def make_accusation(self):
+        """Make Accusation"""
+        person = ''
+        place = ''
+        thing = ''
+
+        while not person:
+            Suspects.print_suspects()
+            person = Suspects.get_suspect(input('Select a Suspect:\n'))
+        while not place:
+            Rooms.print_rooms()
+            place = Rooms.get_room(input('Select a Room:\n'))
+        while not thing:
+            Weapons.print_weapons()
+            thing = Weapons.get_weapon(input('Select a Weapon:\n'))
+
+        self.player.guess = (person, place, thing)
+        accusation_path = os.path.join(self._config.get_host(),
+                                       self.router.paths[Routes.ACCUSATION])
+        response = requests.put(accusation_path,
+                                json=self.router.get_json_params(self.player,
+                                                                 Routes.ACCUSATION)
+                                )
+        if response.status_code in [200, 400]:
+            print(response.json())
 
     def about(self):
         """Print out information from Clue-less About page"""
