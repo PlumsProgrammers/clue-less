@@ -224,7 +224,10 @@ class Clueless:
                                                                  Routes.ACCUSATION)
                                 )
         if response.status_code in [200, 400]:
-            print(response.json())
+            if 'turn' in response.content.decode("utf-8"):
+                print('Not your turn')
+            else:
+                print(response.json())
 
     def about(self):
         """Print out information from Clue-less About page"""
