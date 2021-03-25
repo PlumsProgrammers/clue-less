@@ -158,51 +158,15 @@ class GameWidget(QSplitter):
         self.set_stretch_factor(0, 30)
         self.set_stretch_factor(1, 1)
         self.set_stretch_factor(2, 1)
-        # self.set_sizes([300, 1, 1])
-        # print(self.sizes())
 
     def add_game_board(self):
-        # widget = QWidget(self)
-        # board_layout = QHBoxLayout()
         self.game_board = BoardWidget(self, self._image_mgr)
-        # board_layout.add_widget(self.game_board)
-        # board_layout.add_item(QSpacerItem(0,
-        #                                   0.6 * self.size.height(),  # pylint: disable=no-member
-        #                                   QSizePolicy.Preferred,
-        #                                   QSizePolicy.Expanding))
-        # widget.set_layout(board_layout)
-        # self.add_widget(widget)
         self.add_widget(self.game_board)
 
     def add_hand(self):
-        # widget = QWidget(self)
-        # hand_layout = QHBoxLayout()
         self.hand_widget = HandWidget(self, self._image_mgr)
-        # hand_layout.add_widget(self.hand_widget)
-        # hand_layout.add_item(QSpacerItem(0,
-        #                                  0.2 * self.size.height(),  # pylint: disable=no-member
-        #                                  QSizePolicy.Maximum,
-        #                                  QSizePolicy.Maximum))
-        # widget.set_layout(hand_layout)
-        # self.add_widget(widget)
         self.add_widget(self.hand_widget)
 
     def add_action_widgets(self):
-        # widget = QWidget(self)
-        # action_layout = QHBoxLayout()
         self.action_widget = ActionsWidget(self)
-        # action_layout.add_widget(self.action_widget)
-        # action_layout.add_item(QSpacerItem(0,
-        #                                    0.2 * self.size.height(),  # pylint: disable=no-member
-        #                                    QSizePolicy.Maximum,
-        #                                    QSizePolicy.Maximum))
-        # widget.set_layout(action_layout)
-        # self.add_widget(widget)
         self.add_widget(self.action_widget)
-
-    # def resize_event(self, event):
-    #     super().resize_event(event)
-    #     print(self.size.height())
-    #     print(self.game_board.size.height())
-    #     print(self.hand_widget.size.height())
-    #     print(self.action_widget.size.height())
