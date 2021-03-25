@@ -1,14 +1,14 @@
 """Central GUI for Clue-less game"""
-import sys
-
 from PySide6.QtCore import QRect
-from PySide6.QtWidgets import (QMainWindow, QApplication, QWidget,
+from PySide6.QtWidgets import (QMainWindow, QWidget,
                                QVBoxLayout, QSplitter,
                                QSpacerItem, QSizePolicy)
 
-from chat_widget import ChatWidget
-from game_widget import GameWidget
-from tracker_widget import ClueTrackerWidget
+from gui.chat_widget import ChatWidget
+from gui.game_widget import GameWidget
+from gui.tracker_widget import ClueTrackerWidget
+
+from resources.resource_manager import ImageManager
 
 from __feature__ import snake_case, true_property  # pylint: disable=unused-import # used for making Qt pythonic
 
@@ -20,13 +20,14 @@ class MainWindow(QMainWindow):
         super().__init__()
         self._screen_size = app.primary_screen.size
 
+        self.image_mgr = ImageManager()
+        self.image_mgr.load_images()
+
         self.window_title = 'Clue-less'
         self.geometry = QRect(0, 0,
                               self._screen_size.width(),
                               self._screen_size.width())
-        # self.layout = QHBoxLayout()
         self.central_widget = QSplitter(self)
-        # self.central_widget.set_layout(self.layout)
 
         self.add_chat_gui()
         self.add_game_gui()
@@ -51,7 +52,7 @@ class MainWindow(QMainWindow):
         """Create game GUI Layout"""
         widget = QWidget(self)
         game_layout = QVBoxLayout()
-        self.game_gui = GameWidget(self)
+        self.game_gui = GameWidget(self, self.image_mgr)
         game_layout.add_widget(self.game_gui)
         game_layout.add_item(QSpacerItem(0.5 * self.size.width(),
                                          0,
@@ -72,15 +73,3 @@ class MainWindow(QMainWindow):
                                             QSizePolicy.Maximum))
         widget.set_layout(tracker_layout)
         self.central_widget.add_widget(widget)
-
-
-def main():
-    """Create Qt App"""
-    app = QApplication(sys.argv)
-    window = MainWindow(app)
-    window.show()
-    app.exec_()
-
-
-if __name__ == '__main__':
-    main()

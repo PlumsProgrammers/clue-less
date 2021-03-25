@@ -16,9 +16,8 @@ class Clueless:
             game information
     """
 
-    def __init__(self, verbose, show_gui):
+    def __init__(self, verbose):
         self._verbose = verbose
-        self._show_gui = show_gui
         self._config = ConfigManager()
         self.player = Player()
         self.router = Router(self.player)

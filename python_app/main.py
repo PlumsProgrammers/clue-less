@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 """Script to start Clue-less python front-end, with argument parsing"""
+import sys
 from argparse import ArgumentParser
 
+from PySide6.QtWidgets import QApplication
+
 from interface.clueless_app import Clueless
+from gui.main_gui import MainWindow
 
 
 class ArgParser(ArgumentParser):
@@ -12,9 +16,6 @@ class ArgParser(ArgumentParser):
         """Adds required arguemnts to the Parser"""
         super().__init__(description='Play Clue-less, like Clue, only less!')
 
-        self.add_argument('-g', '--gui',
-                          help="Run Clueless with gui",
-                          action='store_true')
         self.add_argument('-v', '--verbose',
                           help="Additional output while running",
                           action='store_true')
@@ -28,12 +29,14 @@ def main():
     parser = ArgParser()
     args = parser.parse_args()
 
-    main_game = Clueless(args.verbose,
-                         args.gui)
+    main_game = Clueless(args.verbose)
 
     host_found = main_game.test_connection()
     if host_found:
-        main_game.run()
+        app = QApplication(sys.argv)
+        gui = MainWindow(app)
+        gui.show()
+        app.exec_()
 
     print('Exiting...')
 
