@@ -5,7 +5,7 @@ Thanks to:
     https://stackoverflow.com/questions/12219727/dragging-moving-a-qpushbutton-in-pyqt
 """
 from PySide6 import Qt
-from PySide6.QtCore import Qt, SIGNAL, QRect
+from PySide6.QtCore import Qt, SIGNAL, QRect, QSize
 from PySide6.QtGui import QPixmap, QPainter
 from PySide6.QtWidgets import (QLabel, QWidget, QPushButton,
                                QTextEdit, QVBoxLayout, QHBoxLayout,
@@ -18,19 +18,15 @@ class GamePiece(QLabel):
 
     def __init__(self, parent, image_mgr):
         super().__init__(parent)
-        image = image_mgr.get_image('piece')
-        self.pixmap = image
+        self.parent = parent
+        self.image = image_mgr.get_image('piece')
+        self.ratio = self.image.size().width() / self.image.size().height()
+        self.resize(self.image.size())
         self._mouse_press_pos = None
         self._mouse_move_pos = None
 
-    def resize(self):
-        """Resize object to fit Image"""
-        super().resize(self.pixmap.width(),
-                       self.pixmap.height())
-
     def mouse_press_event(self, event):
         """Sets Click or Move based on mouse button"""
-        self.resize()
         if event.button() == Qt.LeftButton:
             self._mouse_press_pos = event.global_pos()
             self._mouse_move_pos = event.global_pos()
@@ -46,32 +42,56 @@ class GamePiece(QLabel):
             self.move(new_pos)
             self._mouse_move_pos = global_pos
 
+    def paint_event(self, event):
+        """Repaint Board so it is Max size and Centered"""
+        super().paint_event(event)
+        # Pylint cannot find width() and height() functions
+        # pylint: disable=no-member
+        width = int(self.parent.game_board.img_width / 18)
+        height = int(self.rect.width() / self.ratio)
+        new_size = QSize()
+        new_size.set_height(height)
+        new_size.set_width(width)
+        self.size = new_size
+        painter = QPainter(self)
+        painter.render_hint = QPainter.SmoothPixmapTransform
+        rect = QRect(self.rect.x(),
+                     self.rect.y(),
+                     width,
+                     height)
+        painter.draw_pixmap(rect, self.image)
+        self.raise_()
+
 
 class BoardImage(QWidget):
     def __init__(self, image_mgr):
         super().__init__()
         self.image = image_mgr.get_image('game_board')
         self.ratio = self.image.width() / self.image.height()
+        self.img_width = self.image.width()
 
     def paint_event(self, event):
-        """Repaint Board so it is Max size and Centered"""
-        super().paint_event(event)
+        """Repaint Board so it is Max size and Centered
+
+        Source: https://stackoverflow.com/questions/44505229/
+                pyqt-automatically-resizing-widget-picture
+        """
         painter = QPainter(self)
         painter.render_hint = QPainter.SmoothPixmapTransform
         # Pylint cannot find width() and height() functions
         # pylint: disable=no-member
         if self.rect.height() < self.rect.width():
-            img_width = self.ratio * self.rect.height()
-            rect = QRect((self.rect.width() - img_width)/2,
+            self.img_width = self.ratio * self.rect.height()
+            rect = QRect((self.rect.width() - self.img_width)/2,
                          self.rect.y(),
-                         img_width,
+                         self.img_width,
                          self.rect.height())
             painter.draw_pixmap(rect, self.image)
         else:
-            img_width = self.rect.width()
-            rect = QRect((self.rect.width() - img_width)/2,
+            self.img_width = self.rect.width()
+            rect = QRect((self.rect.width() - self.img_width)/2,
                          self.rect.y(),
-                         img_width,
+                         self.img_width,
                          self.rect.width() / self.ratio)
             painter.draw_pixmap(rect, self.image)
 
@@ -88,21 +108,19 @@ class BoardWidget(QWidget):
         self.accept_drops = True
 
         self.game_board = BoardImage(image_mgr)
-        # pix = self._image_mgr.get_image('game_board')
-        # print(self._parent, self._parent.width)
-        # self.game_board.pixmap = pix.scaled(self._parent.height,
-        #                                     self._parent.height,
-        #                                     Qt.KeepAspectRatio)
         self.layout.add_widget(self.game_board)
 
-        # self.game_piece = GamePiece(self, image_mgr)
-        # self.layout.add_widget(self.game_piece)
+        self.game_piece = GamePiece(self, image_mgr)
+        # Pylint cannot find width() and height() functions
+        # pylint: disable=no-member
+        self.game_piece.move(self.rect.x(), self.rect.y())
 
         self.set_layout(self.layout)
 
     def resize(self):
         """Resize object to fit Image"""
         self.game_board.repaint()
+        self.game_piece.repaint()
 
 
 class HandWidget(QWidget):
@@ -146,27 +164,18 @@ class GameWidget(QSplitter):
         super().__init__(Qt.Vertical)
         self._image_mgr = image_mgr
         self._parent = parent
-        print(self.size.height())
 
         self.game_board = None
         self.hand_widget = None
 
-        self.add_game_board()
-        self.add_hand()
-        self.add_action_widgets()
-
-        self.set_stretch_factor(0, 30)
-        self.set_stretch_factor(1, 1)
-        self.set_stretch_factor(2, 1)
-
-    def add_game_board(self):
         self.game_board = BoardWidget(self, self._image_mgr)
         self.add_widget(self.game_board)
+        self.set_stretch_factor(0, 30)
 
-    def add_hand(self):
         self.hand_widget = HandWidget(self, self._image_mgr)
         self.add_widget(self.hand_widget)
+        self.set_stretch_factor(1, 1)
 
-    def add_action_widgets(self):
         self.action_widget = ActionsWidget(self)
         self.add_widget(self.action_widget)
+        self.set_stretch_factor(2, 1)q
