@@ -34,7 +34,7 @@ def main():
     host_found = main_game.test_connection()
     if host_found:
         app = QApplication(sys.argv)
-        gui = MainWindow(app)
+        gui = MainWindow(app, main_game)
         gui.show()
         app.exec_()
 

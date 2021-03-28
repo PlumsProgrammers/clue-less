@@ -4,12 +4,12 @@ Thanks to:
     https://zetcode.com/gui/pyqt5/dragdrop/
     https://stackoverflow.com/questions/12219727/dragging-moving-a-qpushbutton-in-pyqt
 """
-from PySide6 import Qt
-from PySide6.QtCore import Qt, SIGNAL, QRect, QSize
-from PySide6.QtGui import QPixmap, QPainter
+# from PySide6 import Qt
+from PySide6.QtCore import Qt, QRect, QSize
+from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (QLabel, QWidget, QPushButton,
                                QTextEdit, QVBoxLayout, QHBoxLayout,
-                               QSpacerItem, QSizePolicy, QSplitter)
+                               QFrame, QSplitter)
 from __feature__ import snake_case, true_property  # pylint: disable=unused-import # used for making Qt pythonic
 
 
@@ -49,21 +49,26 @@ class GamePiece(QLabel):
         # pylint: disable=no-member
         width = int(self.parent.game_board.img_width / 18)
         height = int(self.rect.width() / self.ratio)
-        new_size = QSize()
-        new_size.set_height(height)
-        new_size.set_width(width)
-        self.size = new_size
-        painter = QPainter(self)
-        painter.render_hint = QPainter.SmoothPixmapTransform
-        rect = QRect(self.rect.x(),
-                     self.rect.y(),
-                     width,
-                     height)
-        painter.draw_pixmap(rect, self.image)
-        self.raise_()
+        if width < 1 or height < 1:
+            self.hide()
+        else:
+            new_size = QSize()
+            new_size.set_height(height)
+            new_size.set_width(width)
+            self.size = new_size
+            painter = QPainter(self)
+            painter.render_hint = QPainter.SmoothPixmapTransform
+            rect = QRect(self.rect.x(),
+                         self.rect.y(),
+                         width,
+                         height)
+            painter.draw_pixmap(rect, self.image)
+            self.raise_()
 
 
 class BoardImage(QWidget):
+    """Widget containing scalable game board"""
+
     def __init__(self, image_mgr):
         super().__init__()
         self.image = image_mgr.get_image('game_board')
@@ -76,6 +81,7 @@ class BoardImage(QWidget):
         Source: https://stackoverflow.com/questions/44505229/
                 pyqt-automatically-resizing-widget-picture
         """
+        super().paint_event(event)
         painter = QPainter(self)
         painter.render_hint = QPainter.SmoothPixmapTransform
         # Pylint cannot find width() and height() functions
@@ -96,11 +102,13 @@ class BoardImage(QWidget):
             painter.draw_pixmap(rect, self.image)
 
 
-class BoardWidget(QWidget):
+class BoardWidget(QFrame):
+    """Widget Showing Game Board and Game Pieces"""
 
     def __init__(self, parent, image_mgr):
         super().__init__()
         self._parent = parent
+        self.frame_shape = QFrame.StyledPanel
         self._parent.splitterMoved.connect(self.resize)
         self._image_mgr = image_mgr
 
@@ -120,10 +128,13 @@ class BoardWidget(QWidget):
     def resize(self):
         """Resize object to fit Image"""
         self.game_board.repaint()
+        if self.game_piece.is_hidden():
+            self.game_piece.show()
         self.game_piece.repaint()
 
 
 class HandWidget(QWidget):
+    """Widget Showing Images for cards in Player's Hand"""
 
     def __init__(self, parent, image_mgr):
         super().__init__()
@@ -138,13 +149,15 @@ class HandWidget(QWidget):
 
 
 class ActionsWidget(QWidget):
+    """Widget showing Action History and Suggestion/Accusation button"""
 
     def __init__(self, parent):
         super().__init__()
         self._parent = parent
 
         layout = QHBoxLayout()
-        self.action_log = QTextEdit(self)
+        self.action_log = QTextEdit('> Chat Log Here', self)
+        self.action_log.read_only = True
         layout.add_widget(self.action_log)
 
         button_layout = QVBoxLayout()
@@ -172,10 +185,12 @@ class GameWidget(QSplitter):
         self.add_widget(self.game_board)
         self.set_stretch_factor(0, 30)
 
+        widget = QFrame(self)
+        lower_layout = QVBoxLayout()
         self.hand_widget = HandWidget(self, self._image_mgr)
-        self.add_widget(self.hand_widget)
-        self.set_stretch_factor(1, 1)
+        lower_layout.add_widget(self.hand_widget)
 
         self.action_widget = ActionsWidget(self)
-        self.add_widget(self.action_widget)
-        self.set_stretch_factor(2, 1)q
+        lower_layout.add_widget(self.action_widget)
+        widget.set_layout(lower_layout)
+        self.add_widget(widget)

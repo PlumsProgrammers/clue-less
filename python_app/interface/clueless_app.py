@@ -19,6 +19,10 @@ class Clueless:
     def __init__(self, verbose):
         self._verbose = verbose
         self._config = ConfigManager()
+
+        self.game_id = None
+        self.password = None
+
         self.player = Player()
         self.router = Router(self.player)
 

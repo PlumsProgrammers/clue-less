@@ -1,11 +1,11 @@
 """GUI Elements for Chat Widget"""
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
-                               QTextEdit, QPushButton, QSpacerItem,
-                               QSizePolicy)
+from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QTextEdit,
+                               QPushButton, QSpacerItem,
+                               QFrame, QSizePolicy)
 from __feature__ import snake_case, true_property  # pylint: disable=unused-import # used for making Qt pythonic
 
 
-class ChatWidget(QWidget):
+class ChatWidget(QFrame):
     """Chat Layout"""
 
     def __init__(self, parent):
@@ -13,11 +13,13 @@ class ChatWidget(QWidget):
         super().__init__()
         self._parent = parent
         self.chat_layout = QVBoxLayout()
+        self.frame_shape = QFrame.StyledPanel
 
         top_layout = QHBoxLayout()
-        chat_box = QTextEdit('Chat coming soon')
-        chat_box.is_read_only = True
-        top_layout.add_widget(chat_box)
+        self.chat_box = QTextEdit('Chat coming soon')
+        self.chat_box.read_only = True
+        top_layout.add_widget(self.chat_box)
+        # pylint: disable=no-member
         top_layout.add_item(QSpacerItem(0,
                                         int(self.size.height()),
                                         QSizePolicy.Minimum,

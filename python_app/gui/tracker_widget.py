@@ -1,9 +1,9 @@
 """GUI Elements for Clue Tracker"""
-from PySide6.QtWidgets import (QLabel, QWidget, QVBoxLayout)
+from PySide6.QtWidgets import (QLabel, QFrame, QVBoxLayout)
 from __feature__ import snake_case, true_property  # pylint: disable=unused-import # used for making Qt pythonic
 
 
-class ClueTrackerWidget(QWidget):
+class ClueTrackerWidget(QFrame):
     """Clue Tracker Layout"""
 
     def __init__(self, parent):
@@ -12,5 +12,6 @@ class ClueTrackerWidget(QWidget):
         self.layout = QVBoxLayout()
         message = QLabel('Tracker Coming Soon')
         self.layout.add_widget(message)
+        self.frame_shape = QFrame.StyledPanel
 
         self.set_layout(self.layout)
