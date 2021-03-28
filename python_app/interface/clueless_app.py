@@ -233,10 +233,10 @@ class Clueless:
                 print(response.json())
 
     def about(self):
-        """Print out information from Clue-less About page"""
+        """Return information from Clue-less About page"""
         about_page = os.path.join(self._config.get_host(),
                                   self.router.paths[Routes.ABOUT])
-        print('\n', requests.get(about_page).json())
+        return requests.get(about_page).json()
 
     def help(self):
         """Print out help message descriping action selection"""

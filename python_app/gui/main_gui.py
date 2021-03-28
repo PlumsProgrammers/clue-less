@@ -2,7 +2,7 @@
 from PySide6.QtCore import SIGNAL, QRect
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (QMainWindow, QWidget, QMenuBar,
-                               QVBoxLayout, QSplitter,
+                               QMessageBox, QVBoxLayout, QSplitter,
                                QSpacerItem, QSizePolicy)
 
 from gui.chat_widget import ChatWidget
@@ -89,11 +89,13 @@ class MainWindow(QMainWindow):
 
         help_menu.add_action('&Rules')
 
-        about_menu = help_menu.add_menu('&About')
-        about_action = about_menu.add_action('About Action')
+        about_action = help_menu.add_action('&About')
+        about_action.shortcut = 'Ctrl+a'
         self.connect(about_action,
                      SIGNAL('triggered()'),
                      self.show_about_message)
 
     def show_about_message(self):
-        print('here')
+        """Show About Message Popup"""
+        response = self.game_instance.about()
+        QMessageBox.information(self, 'About', response)
