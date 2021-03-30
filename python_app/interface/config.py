@@ -21,7 +21,7 @@ class ConfigManager:
         return self._user
 
 
-class Routes(Enum):
+class Router(Enum):
     """Enum of possible server functions"""
     ABOUT = 0
     TEST_CONNECTION = 1
@@ -34,44 +34,38 @@ class Routes(Enum):
     SET_CHARACTER = 6
     ACCUSATION = 7
 
-
-class Router:
-    """Stores required information for requests to the Clue-less Server"""
-
-    def __init__(self, player):
-        self.paths = {}
-        self.json_params = {}
-
-        self.set_paths()
-        self.get_json_params(player)
-
-    def set_paths(self):
+    @staticmethod
+    def get_path(route=None):
         """Sets dictionary for Clue-less server paths"""
-        self.paths = {Routes.ABOUT: 'about',
-                      Routes.TEST_CONNECTION: 'test_connection',
+        paths = {Router.ABOUT: 'about',
+                 Router.TEST_CONNECTION: 'test_connection',
 
-                      Routes.CREATE_GAME: 'games',
-                      Routes.CHECK_GAME_STATUS: 'games',
-                      Routes.JOIN_GAME: 'games/join',
-                      Routes.START_GAME: 'games/start',
+                 Router.CREATE_GAME: 'games',
+                 Router.CHECK_GAME_STATUS: 'games',
+                 Router.JOIN_GAME: 'games/join',
+                 Router.START_GAME: 'games/start',
 
-                      Routes.SET_CHARACTER: 'players/selectSuspect',
+                 Router.SET_CHARACTER: 'players/selectSuspect',
 
-                      Routes.ACCUSATION: 'gameplay/accusation'}
+                 Router.ACCUSATION: 'gameplay/accusation'}
+        return paths.get(route, None)
 
-    def get_json_params(self, player, route=None):
+    @staticmethod
+    def get_json_params(game, player, route=None):
         """Sets dictionary for getting require JSON params"""
-        self.json_params = {Routes.CREATE_GAME: {'name': player.game_name},
-                            Routes.JOIN_GAME: {'username': player.username,
-                                               'gameId': player.game_id},
-                            Routes.START_GAME: {'gameId': player.game_id},
-                            Routes.SET_CHARACTER: {'gameId': player.game_id,
-                                                   'uuid': player.uuid,
-                                                   'suspect': player.suspect},
-                            Routes.ACCUSATION: {'gameId': player.game_id,
-                                                'username': player.username,
-                                                'accusation': {'suspect': player.guess[0],
-                                                               'weapon': player.guess[1],
-                                                               'room': player.guess[2]}}
-                            }
-        return self.json_params.get(route, None)
+        json_params = {Router.CREATE_GAME: {'name': game.game_name,
+                                            'password': game.password},
+                       Router.JOIN_GAME: {'username': player.username,
+                                          'gameId': game.game_id,
+                                          'password': game.password},
+                       Router.START_GAME: {'gameId': game.game_id},
+                       Router.SET_CHARACTER: {'gameId': game.game_id,
+                                              'uuid': player.uuid,
+                                              'suspect': player.suspect},
+                       Router.ACCUSATION: {'gameId': game.game_id,
+                                           'username': player.username,
+                                           'accusation': {'suspect': player.guess[0],
+                                                          'weapon': player.guess[1],
+                                                          'room': player.guess[2]}}
+                       }
+        return json_params.get(route, None)

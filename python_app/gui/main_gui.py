@@ -1,9 +1,11 @@
 """Central GUI for Clue-less game"""
 from PySide6.QtCore import SIGNAL, QRect
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import (QMainWindow, QWidget, QMenuBar,
-                               QMessageBox, QVBoxLayout, QSplitter,
-                               QSpacerItem, QSizePolicy)
+                               QMessageBox, QVBoxLayout, QHBoxLayout,
+                               QSpacerItem, QSizePolicy, QLabel,
+                               QSplitter, QDialog, QPushButton,
+                               QFrame, QLineEdit)
 
 from gui.chat_widget import ChatWidget
 from gui.game_widget import GameWidget
@@ -45,6 +47,10 @@ class MainWindow(QMainWindow):
         """Create chat GUI Layout"""
         widget = QWidget(self)
         chat_layout = QVBoxLayout()
+
+        self.game_info = QLabel(self)
+        chat_layout.add_widget(self.game_info)
+
         self.chat_gui = ChatWidget(self)
         chat_layout.add_widget(self.chat_gui)
         chat_layout.add_item(QSpacerItem(0.25 * self.size.width(),  # pylint: disable=no-member
@@ -53,6 +59,11 @@ class MainWindow(QMainWindow):
                                          QSizePolicy.Maximum))
         widget.set_layout(chat_layout)
         self.central_widget.add_widget(widget)
+
+    def set_game_info_text(self):
+        """Update Game Information text"""
+        self.game_info.text = f'Game Name: {self.game_instance.game_name} | ' + \
+                              f'Game ID: {self.game_instance.game_id}'
 
     def add_game_gui(self):
         """Create game GUI Layout"""
@@ -99,3 +110,121 @@ class MainWindow(QMainWindow):
         """Show About Message Popup"""
         response = self.game_instance.about()
         QMessageBox.information(self, 'About', response)
+
+    def show(self):
+        """Initialze Game GUI if Game Login Succeeds"""
+        join_menu = JoinMenu(self)
+        result = join_menu.exec_()
+        if result == QDialog.Accepted:
+            super().show()
+            return True
+        return False
+
+
+class JoinMenu(QDialog):
+    """Popup Menu for Starting/Joining Games
+
+    Attributes:
+        game_name_box (QLineEdit): Set Game Name - New Game
+        create_password_box (QLineEdit): Set Game Password - New Game
+        create_username_box (QLineEdit): Set Player Username - New Game
+        game_code_box (QLineEdit): Set GameId Value - Join Game
+        join_password_box (QLineEdit): Set Game Password - Join Game
+        join_username_box (QLineEdit): Set Player Username - New Game
+    """
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        menu_layout = QHBoxLayout()
+        self._game_instance = parent.game_instance
+
+        # Set Up Start Game Options
+        new_game_layout = QVBoxLayout()
+        new_game_layout.add_widget(QLabel('New Game'))
+        line = QFrame()
+        line.frame_shape = QFrame.HLine
+        line.frame_shadow = QFrame.Sunken
+        new_game_layout.add_widget(line)
+        new_game_layout.add_widget(QLabel('Game Name'))
+        self.game_name_box = QLineEdit(self)
+        new_game_layout.add_widget(self.game_name_box)
+        new_game_layout.add_widget(QLabel('Set Game Password (Optional)'))
+        self.create_password_box = QLineEdit(self)
+        self.create_password_box.echo_mode = QLineEdit.Password
+        new_game_layout.add_widget(self.create_password_box)
+        new_game_layout.add_widget(QLabel('Username'))
+        self.create_username_box = QLineEdit(self)
+        new_game_layout.add_widget(self.create_username_box)
+        new_game_button = QPushButton('Start', self)
+        self.connect(new_game_button,
+                     SIGNAL('clicked()'),
+                     self.start_new_game)
+        new_game_layout.add_widget(new_game_button)
+        menu_layout.add_layout(new_game_layout)
+
+        # Add Vertical Seperator
+        line = QFrame()
+        line.frame_shape = QFrame.VLine
+        line.frame_shadow = QFrame.Sunken
+        menu_layout.add_widget(line)
+
+        # Set Up Join Game Options
+        join_game_layout = QVBoxLayout()
+        join_game_layout.add_widget(QLabel('Join Game'))
+        line = QFrame()
+        line.frame_shape = QFrame.HLine
+        line.frame_shadow = QFrame.Sunken
+        join_game_layout.add_widget(line)
+        join_game_layout.add_widget(QLabel('Game Code'))
+        self.game_code_box = QLineEdit(self)
+        self.game_code_box.set_validator(QIntValidator())
+        join_game_layout.add_widget(self.game_code_box)
+        join_game_layout.add_widget(QLabel('Game Password (Optional)'))
+        self.join_password_box = QLineEdit(self)
+        self.join_password_box.echo_mode = QLineEdit.Password
+        join_game_layout.add_widget(self.join_password_box)
+        join_game_layout.add_widget(QLabel('Username'))
+        self.join_username_box = QLineEdit(self)
+        join_game_layout.add_widget(self.join_username_box)
+        join_game_button = QPushButton('Join', self)
+        self.connect(join_game_button,
+                     SIGNAL('clicked()'),
+                     self.join_game)
+        join_game_layout.add_widget(join_game_button)
+        menu_layout.add_layout(join_game_layout)
+
+        self.set_layout(menu_layout)
+
+    def start_new_game(self):
+        """Start New Game using User Provided Responses"""
+        game_name = str(self.game_name_box.text).strip()
+        password = self.create_password_box.text
+        username = str(self.create_username_box.text).strip()
+        result, message = self._game_instance.create_game(game_name=game_name,
+                                                          password=password)
+        if result:
+            result, message = self._game_instance.join_game(game_id=self._game_instance.game_id,
+                                                            username=username,
+                                                            password=password)
+            if result:
+                QMessageBox.information(self, 'Success', message.title())
+                super().accept()
+
+        if not result:
+            QMessageBox.warning(self, 'Oops', message.title())
+
+    def join_game(self):
+        """Join Existing Game using User Provided Responses"""
+        game_id = int(self.game_code_box.text)
+        password = self.join_password_box.text
+        username = str(self.join_username_box.text).strip()
+
+        result, message = self._game_instance.join_game(game_id=game_id,
+                                                        username=username,
+                                                        password=password)
+        if result:
+            QMessageBox.information(self, 'Success', message.title())
+            super().accept()
+
+        if not result:
+            QMessageBox.warning(self, 'Oops', message.title())

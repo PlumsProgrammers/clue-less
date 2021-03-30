@@ -81,17 +81,15 @@ class Weapons(Enum):
               'Rope, '
               'Wrench')
 
-# pylint: disable=too-many-instance-attributes # need to move game_name and id to game
+
 class Player:  # pylint: disable=too-few-public-methods # Will need updates
     """Store current Player information"""
 
     def __init__(self):
         self.username = None
         self.uuid = None
-        self.game_id = None
-        self.game_name = None
         self.suspect = None
         self.cards = []
         self.location = None
-        self.status = None
+        self.turn = None
         self.guess = (None, None, None)

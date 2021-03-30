@@ -35,8 +35,8 @@ def main():
     if host_found:
         app = QApplication(sys.argv)
         gui = MainWindow(app, main_game)
-        gui.show()
-        app.exec_()
+        if gui.show():
+            app.exec_()
 
     print('Exiting...')
 
