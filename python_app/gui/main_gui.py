@@ -1,5 +1,5 @@
 """Central GUI for Clue-less game"""
-from PySide6.QtCore import SIGNAL, QRect
+from PySide6.QtCore import SIGNAL
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import (QMainWindow, QWidget, QMenuBar,
                                QMessageBox, QVBoxLayout, QHBoxLayout,
@@ -13,27 +13,37 @@ from gui.tracker_widget import ClueTrackerWidget
 
 from resources.resource_manager import ImageManager
 
+# pylint: disable=wrong-import-order # Import must go last
 from __feature__ import snake_case, true_property  # pylint: disable=unused-import # used for making Qt pythonic
 
 
 class MainWindow(QMainWindow):
-    """Main Layout"""
+    """Main Layout
 
-    def __init__(self, app, game_instance):
+    Attributes:
+        game_instance (clueless_app.Clueless): Main Game Instance
+        image_mgr (ImageManager): Manages Loading of Images for GUI
+        central_widget (QSplitter): Resizable Widget containing three main
+            GUI sections
+        game_info (QLabel): Widget displaying current game status
+        chat_gui (ChatWidget): Widget displaying User-User chat
+        game_gui (GameWidget): Widget displaying Game information and interface
+        tracker_gui (ClueTrackerWidget): Widget for users to track clue information
+    """
+
+    def __init__(self, game_instance):
         super().__init__()
-        screen_size = app.primary_screen.size
 
         self.game_instance = game_instance
 
         self.image_mgr = ImageManager()
         self.image_mgr.load_images()
 
-        self.window_title = 'Clue-less'
-        self.geometry = QRect(0, 0,
-                              screen_size.width(),
-                              screen_size.width())
-
         self.central_widget = QSplitter(self)
+        self.game_info = None
+        self.chat_gui = None
+        self.game_gui = None
+        self.tracker_gui = None
 
         self.add_chat_gui()
         self.add_game_gui()
@@ -42,6 +52,7 @@ class MainWindow(QMainWindow):
         self.set_central_widget(self.central_widget)
 
         self.add_menu_bar()
+        self.update_game_info_text()
 
     def add_chat_gui(self):
         """Create chat GUI Layout"""
@@ -60,16 +71,16 @@ class MainWindow(QMainWindow):
         widget.set_layout(chat_layout)
         self.central_widget.add_widget(widget)
 
-    def set_game_info_text(self):
+    def update_game_info_text(self):
         """Update Game Information text"""
-        self.game_info.text = f'Game Name: {self.game_instance.game_name} | ' + \
-                              f'Game ID: {self.game_instance.game_id}'
+        self.game_info.text = f'Game ID: {self.game_instance.game_id} | ' + \
+                              f'Status: {self.game_instance.status}'
 
     def add_game_gui(self):
         """Create game GUI Layout"""
         widget = QWidget(self)
         game_layout = QVBoxLayout()
-        self.game_gui = GameWidget(self, self.image_mgr)
+        self.game_gui = GameWidget(self, self.game_instance, self.image_mgr)
         game_layout.add_widget(self.game_gui)
         game_layout.add_item(QSpacerItem(0.5 * self.size.width(),  # pylint: disable=no-member
                                          0,
@@ -96,10 +107,20 @@ class MainWindow(QMainWindow):
         menu_bar = QMenuBar(self)
         self.set_menu_bar(menu_bar)
 
+        game_menu = menu_bar.add_menu('&Game')
+        start_action = game_menu.add_action('Start &Game')
+        start_action.shortcut = 'Ctrl+g'
+        self.connect(start_action,
+                     SIGNAL('triggered()'),
+                     self.start_game)
+        start_action = game_menu.add_action('Check Game Status')
+        start_action.shortcut = 'Ctrl+r'
+        self.connect(start_action,
+                     SIGNAL('triggered()'),
+                     self.check_game_status)
+
         help_menu = menu_bar.add_menu('&Help')
-
         help_menu.add_action('&Rules')
-
         about_action = help_menu.add_action('&About')
         about_action.shortcut = 'Ctrl+a'
         self.connect(about_action,
@@ -119,6 +140,28 @@ class MainWindow(QMainWindow):
             super().show()
             return True
         return False
+
+    def start_game(self):
+        """Start Current Game"""
+        result, message = self.game_instance.start_game()
+        if result:
+            QMessageBox.information(self, 'Success', message.title())
+
+        if not result:
+            QMessageBox.warning(self, 'Oops', message.title())
+
+        self.update_game_info_text()
+
+    def check_game_status(self):
+        """Check Status of Current Game"""
+        result, message = self.game_instance.check_game_status()
+        if result:
+            QMessageBox.information(self, 'Success', message.title())
+
+        if not result:
+            QMessageBox.warning(self, 'Oops', message.title())
+
+        self.update_game_info_text()
 
 
 class JoinMenu(QDialog):
@@ -200,18 +243,20 @@ class JoinMenu(QDialog):
         game_name = str(self.game_name_box.text).strip()
         password = self.create_password_box.text
         username = str(self.create_username_box.text).strip()
-        result, message = self._game_instance.create_game(game_name=game_name,
-                                                          password=password)
-        if result:
-            result, message = self._game_instance.join_game(game_id=self._game_instance.game_id,
-                                                            username=username,
-                                                            password=password)
-            if result:
-                QMessageBox.information(self, 'Success', message.title())
-                super().accept()
 
-        if not result:
-            QMessageBox.warning(self, 'Oops', message.title())
+        if game_name and username:
+            result, message = self._game_instance.create_game(game_name=game_name,
+                                                              password=password)
+            if result:
+                result, message = self._game_instance.join_game(game_id=self._game_instance.game_id,
+                                                                username=username,
+                                                                password=password)
+                if result:
+                    QMessageBox.information(self, 'Success', message.title())
+                    super().accept()
+
+            if not result:
+                QMessageBox.warning(self, 'Oops', message.title())
 
     def join_game(self):
         """Join Existing Game using User Provided Responses"""
@@ -219,12 +264,13 @@ class JoinMenu(QDialog):
         password = self.join_password_box.text
         username = str(self.join_username_box.text).strip()
 
-        result, message = self._game_instance.join_game(game_id=game_id,
-                                                        username=username,
-                                                        password=password)
-        if result:
-            QMessageBox.information(self, 'Success', message.title())
-            super().accept()
+        if game_id and username:
+            result, message = self._game_instance.join_game(game_id=game_id,
+                                                            username=username,
+                                                            password=password)
+            if result:
+                QMessageBox.information(self, 'Success', message.title())
+                super().accept()
 
-        if not result:
-            QMessageBox.warning(self, 'Oops', message.title())
+            if not result:
+                QMessageBox.warning(self, 'Oops', message.title())

@@ -5,16 +5,27 @@ Thanks to:
     https://stackoverflow.com/questions/12219727/dragging-moving-a-qpushbutton-in-pyqt
 """
 # from PySide6 import Qt
-from PySide6.QtCore import Qt, QRect, QSize
+from PySide6.QtCore import SIGNAL, Qt, QRect, QSize
 from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (QLabel, QWidget, QPushButton,
                                QTextEdit, QVBoxLayout, QHBoxLayout,
-                               QFrame, QSplitter)
+                               QFrame, QSplitter, QDialog, QMessageBox,
+                               QFormLayout, QComboBox)
+
+from interface.game_objects import Rooms, Suspects, Weapons
+
+# pylint: disable=wrong-import-order # Import must go last
 from __feature__ import snake_case, true_property  # pylint: disable=unused-import # used for making Qt pythonic
 
 
 class GamePiece(QLabel):
-    """Moveable Game Piece"""
+    """Moveable Game Piece
+
+    Attributes:
+        parent (BoardWidget): Board Widget containing this piece
+        image (QPixMap): Image used for Game Board
+        ratio (float): image Width/Height
+    """
 
     def __init__(self, parent, image_mgr):
         super().__init__(parent)
@@ -67,7 +78,13 @@ class GamePiece(QLabel):
 
 
 class BoardImage(QWidget):
-    """Widget containing scalable game board"""
+    """Widget containing scalable game board
+
+    Attributes:
+        image (QPixMap): Image used for Game Board
+        ratio (float): image Width/Height
+        img_width (int): Current board image width
+    """
 
     def __init__(self, image_mgr):
         super().__init__()
@@ -103,7 +120,12 @@ class BoardImage(QWidget):
 
 
 class BoardWidget(QFrame):
-    """Widget Showing Game Board and Game Pieces"""
+    """Widget Showing Game Board and Game Pieces
+
+    Attributes:
+        game_board (BoardImage): Resizable Game Board widget
+        game_piece (GamePiece): Movable Game Piece widget
+    """
 
     def __init__(self, parent, image_mgr):
         super().__init__()
@@ -112,18 +134,18 @@ class BoardWidget(QFrame):
         self._parent.splitterMoved.connect(self.resize)
         self._image_mgr = image_mgr
 
-        self.layout = QVBoxLayout()
+        layout = QVBoxLayout()
         self.accept_drops = True
 
         self.game_board = BoardImage(image_mgr)
-        self.layout.add_widget(self.game_board)
+        layout.add_widget(self.game_board)
 
         self.game_piece = GamePiece(self, image_mgr)
         # Pylint cannot find width() and height() functions
         # pylint: disable=no-member
         self.game_piece.move(self.rect.x(), self.rect.y())
 
-        self.set_layout(self.layout)
+        self.set_layout(layout)
 
     def resize(self):
         """Resize object to fit Image"""
@@ -134,7 +156,11 @@ class BoardWidget(QFrame):
 
 
 class HandWidget(QWidget):
-    """Widget Showing Images for cards in Player's Hand"""
+    """Widget Showing Images for cards in Player's Hand
+
+    Attributes:
+        card_layout (QHBoxLayout): Horizontal Layout where Cards are shown
+    """
 
     def __init__(self, parent, image_mgr):
         super().__init__()
@@ -149,7 +175,11 @@ class HandWidget(QWidget):
 
 
 class ActionsWidget(QWidget):
-    """Widget showing Action History and Suggestion/Accusation button"""
+    """Widget showing Action History and Suggestion/Accusation button
+
+    Attributes:
+        action_log (QTextEdit): Text box for showing action history
+    """
 
     def __init__(self, parent):
         super().__init__()
@@ -161,20 +191,45 @@ class ActionsWidget(QWidget):
         layout.add_widget(self.action_log)
 
         button_layout = QVBoxLayout()
-        self.suggestion_button = QPushButton('Make Suggestion')
-        self.accusation_button = QPushButton('Make Accusation')
-        button_layout.add_widget(self.suggestion_button)
-        button_layout.add_widget(self.accusation_button)
+        suggestion_button = QPushButton('Make Suggestion')
+        accusation_button = QPushButton('Make Accusation')
+        self.connect(accusation_button,
+                     SIGNAL('clicked()'),
+                     self.make_accusation)
+        button_layout.add_widget(suggestion_button)
+        button_layout.add_widget(accusation_button)
 
         layout.add_layout(button_layout)
         self.set_layout(layout)
 
+    def make_accusation(self):
+        """Create Form to Select Accusation, then submit"""
+        accusation = AccusationWidget(self)
+        status = accusation.exec_()
+        if status == QDialog.Accepted:
+            result, message = self._parent.game_instance.make_accusation(accusation.person,
+                                                                         accusation.place,
+                                                                         accusation.thing)
+            if result:
+                QMessageBox.information(self, 'Result', message)
+            else:
+                QMessageBox.warning(self, 'Oops', message)
+
 
 class GameWidget(QSplitter):
-    """Central Game Layout"""
+    """Central Game Layout
 
-    def __init__(self, parent, image_mgr):
+    Attributes:
+        game_instance (clueless_app.Clueless): Main Game instance
+        game_board (BoardWidget): Resizable Game Board widget
+        hand_widget (HandWidget): Widget containing player cards
+        action_widtet (ActionsWidget): Widget containing action
+            history and accusation/suggestion buttons
+    """
+
+    def __init__(self, parent, game_instance, image_mgr):
         super().__init__(Qt.Vertical)
+        self.game_instance = game_instance
         self._image_mgr = image_mgr
         self._parent = parent
 
@@ -194,3 +249,61 @@ class GameWidget(QSplitter):
         lower_layout.add_widget(self.action_widget)
         widget.set_layout(lower_layout)
         self.add_widget(widget)
+
+
+class AccusationWidget(QDialog):
+    """Create a form for making Accusations
+
+    Attributes:
+        person (str): Suspect Selected for Accusation
+        place (str): Room Selected for Accusation
+        thing (str): Weapon Selected for Accusation
+        suspect_selector (QComboBox): Dropdown for selecting suspects
+        room_selector (QComboBox): Dropdown for selecting rooms
+        weapon_selector (QComboBox): Dropdown for selecting weapons
+    """
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self._parent = parent
+        self.person = None
+        self.place = None
+        self.thing = None
+
+        form = QFormLayout()
+        self.suspect_selector = QComboBox(self)
+        self.suspect_selector.add_items(['None'] + Suspects.get_suspect_list())
+        form.add_row(QLabel('Suspect'), self.suspect_selector)
+        self.room_selector = QComboBox(self)
+        self.room_selector.add_items(['None'] + Rooms.get_room_list())
+        form.add_row(QLabel('Room'), self.room_selector)
+        self.weapon_selector = QComboBox(self)
+        self.weapon_selector.add_items(['None'] + Weapons.get_weapon_list())
+        form.add_row(QLabel('Weapon'), self.weapon_selector)
+
+        accept_button = QPushButton('Accuse', self)
+        self.connect(accept_button,
+                     SIGNAL('clicked()'),
+                     self.accept)
+
+        cancel_button = QPushButton('Cancel', self)
+        self.connect(cancel_button,
+                     SIGNAL('clicked()'),
+                     self.reject)
+        form.add_row(accept_button, cancel_button)
+        self.set_layout(form)
+
+    def accept(self):
+        """Override of QDialog accept method, verifies user selections"""
+        self.person = self.suspect_selector.current_text
+        self.place = self.room_selector.current_text
+        self.thing = self.weapon_selector.current_text
+
+        if self.person == 'None':
+            QMessageBox.warning(self, 'Oops', 'Please Select a Suspect')
+        elif self.place == 'None':
+            QMessageBox.warning(self, 'Oops', 'Please Select a Room')
+        elif self.thing == 'None':
+            QMessageBox.warning(self, 'Oops', 'Please Select a Weapon')
+        else:
+            super().accept()
