@@ -186,7 +186,7 @@ class ActionsWidget(QWidget):
         self._parent = parent
 
         layout = QHBoxLayout()
-        self.action_log = QTextEdit('> Chat Log Here', self)
+        self.action_log = QTextEdit('> Action History Here', self)
         self.action_log.read_only = True
         layout.add_widget(self.action_log)
 
