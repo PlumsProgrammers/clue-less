@@ -72,9 +72,10 @@ class GamePiece(QtWidgets.QLabel):
                                 height)
             painter.draw_pixmap(rect, self.image)
             self.raise_()
+        self.parent.update_room_positions()
 
 
-class BoardImage(QtWidgets.QWidget):
+class BoardImage(QtWidgets.QLabel):
     """Widget containing scalable game board
 
     Attributes:
@@ -88,6 +89,7 @@ class BoardImage(QtWidgets.QWidget):
         self.image = image_mgr.get_image('game_board')
         self.ratio = self.image.width() / self.image.height()
         self.img_width = self.image.width()
+        self.draw_area = None
 
     def paint_event(self, event):
         """Repaint Board so it is Max size and Centered
@@ -103,16 +105,18 @@ class BoardImage(QtWidgets.QWidget):
         if self.rect.height() < self.rect.width():
             self.img_width = self.ratio * self.rect.height()
             rect = QtCore.QRect((self.rect.width() - self.img_width)/2,
-                                self.rect.y(),
+                                0,
                                 self.img_width,
                                 self.rect.height())
+            self.draw_area = rect
             painter.draw_pixmap(rect, self.image)
         else:
             self.img_width = self.rect.width()
             rect = QtCore.QRect((self.rect.width() - self.img_width)/2,
-                                self.rect.y(),
+                                0,
                                 self.img_width,
                                 self.rect.width() / self.ratio)
+            self.draw_area = rect
             painter.draw_pixmap(rect, self.image)
 
 
@@ -126,10 +130,11 @@ class BoardWidget(QtWidgets.QFrame):
 
     def __init__(self, parent, image_mgr):
         super().__init__()
-        self._parent = parent
         self.frame_shape = QtWidgets.QFrame.StyledPanel
-        self._parent.splitterMoved.connect(self.resize)
+        parent.splitterMoved.connect(self.resize)
         self._image_mgr = image_mgr
+        self.character_positions = Suspects.get_starting_positions()
+        self.room_locations = {}
 
         layout = QtWidgets.QVBoxLayout()
         self.accept_drops = True
@@ -143,6 +148,7 @@ class BoardWidget(QtWidgets.QFrame):
         self.game_piece.move(self.rect.x(), self.rect.y())
 
         self.set_layout(layout)
+        self.update_room_positions()
 
     def resize(self):
         """Resize object to fit Image"""
@@ -150,6 +156,9 @@ class BoardWidget(QtWidgets.QFrame):
         if self.game_piece.is_hidden():
             self.game_piece.show()
         self.game_piece.repaint()
+
+    def update_room_positions(self):
+        pass
 
 
 class HandWidget(QtWidgets.QWidget):

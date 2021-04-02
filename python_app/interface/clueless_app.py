@@ -85,6 +85,7 @@ class Clueless:
             for player in players:
                 if player['username'] == self.player.username:
                     self.player.uuid = player['uuid']
+                    self.player.suspect = player['suspect']
                     break
             message = f'Joining Game as {self.player.username}\n' + \
                       f'Invite your friends with Game Code {self.game_id}'
@@ -119,6 +120,12 @@ class Clueless:
             for game in games:
                 if game['id'] == self.game_id:
                     self.status = game['status']
+                    players = game['players']
+                    for player in players:
+                        if player['username'] == self.player.username:
+                            self.player.uuid = player['uuid']
+                            self.player.suspect = player['suspect']
+                            break
             return True, f'Game Status: {self.status}'
         return False, 'Could Not Find Game'
 
