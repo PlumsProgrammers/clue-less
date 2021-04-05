@@ -1,3 +1,3 @@
-const {games} = require("../../collections/games");
+const {Game} = require("../../models/game");
 
-module.exports = (req, res) => res.json(games);
+module.exports = (req, res) => res.json(Game.allInstances);

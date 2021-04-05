@@ -1,12 +1,12 @@
 const {paramsRequiredMessage, parameterCheck} = require("../../helpers/parameters");
-const {movePlayer} = require("../../collections/games");
-const _ = require('lodash');
+const {Game} = require("../../models/game");
 
 const requiredParams = ['gameId', 'username', 'location']
 module.exports = (req, res) => {
   if (parameterCheck(req, requiredParams)) {
     try {
-      res.json(movePlayer(_.pick(req.body, requiredParams)));
+      let game = Game.find(req.body.gameId)
+      res.json(game.movePlayer(req.body.username, req.body.location));
     } catch(e) {
       res.status(400)
       res.json(e.message)

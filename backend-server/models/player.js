@@ -1,4 +1,5 @@
 const { v4 } = require('uuid');
+const { app } = require('../app')
 
 exports.Player = class {
   constructor(username) {
@@ -8,6 +9,13 @@ exports.Player = class {
     this.suspect = ''
     this.location = ''
     this.failed = false
+  }
+  socketRoom = () => this.uuid
+  broadcast = (message, event = 'game') => app.get('io').to(this.socketRoom()).emit(event, message)
+
+  addCard(card) {
+    this.cards.push(card);
+    this.broadcast(`New Card: ${card.name}`)
   }
 
   roomName = () => this.uuid;
