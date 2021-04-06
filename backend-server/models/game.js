@@ -86,6 +86,28 @@ const Game = class Game{
     return this.turn.currentPlayer;
   }
 
+  makeSuggestion(username, suggestion) {
+    let suggestingPlayer = this.turn.currentPlayer
+    if (this.status !== 'playing') throw new Error("Game is not in progress.")
+    if (suggestingPlayer.username !== username) throw new Error("Not your turn.")
+    if (!(this.turn.phase in [turnPhases.MOVEMENT, turnPhases.SUGGESTION])) throw new Error("Already made a suggestion.")
+
+    this.broadcast(`${suggestingPlayer.username} is making a suggestion of: ${suggestion}`)
+    this.turn.suggest(suggestion)
+  }
+
+  suggestionResponse(username, card = null) {
+    if (this.status !== 'playing') throw new Error("Game is not in progress.")
+    if (this.turn.suggestTo !== username) throw new Error("Not your turn to respond.")
+    if (this.turn.phase !== turnPhases.MID_SUGGESTION) throw new Error("Already made a suggestion.")
+    if (card == null || this.turn.suggestTo.cards.map((card) => card.name).some(card => this.turn.currentSuggestion.values.includes(card)))
+      throw new Error("You must show a card, since you can disprove the suggestion.")
+    if (!(card in this.turn.suggestTo.cards.map((card) => card.name))) throw new Error("You can't show a card you don't have.")
+    if (!(card.name in this.turn.currentSuggestion.values)) throw new Error("That card doesn't disprove the suggestion.")
+
+    this.turn.suggestionResponse(card)
+  }
+
   makeAccusation(username, accusation) {
     let guessingPlayer = this.turn.currentPlayer
     if (this.status !== 'playing') throw new Error("Game is not in progress.")
@@ -108,6 +130,13 @@ const Game = class Game{
 
     this.status = 'Finished'
     this.broadcast('Everyone has failed, the game ends with no winner.')
+  }
+
+  endTurn(username) {
+    if (this.status !== 'playing') throw new Error("Game is not in progress.")
+    if (this.turn.currentPlayer.username !== username) throw new Error("Not your turn.")
+
+    this.turn.endTurn(username)
   }
 
   // Private
@@ -142,7 +171,7 @@ const Game = class Game{
     while(deck.length) this.players[i++ % this.players.length].addCard(deck.pop())
   }
 
-  #setupTurn() { this.turn = new Turn(this.players) }
+  #setupTurn() { this.turn = new Turn(this.players, this.broadcast) }
 
   #checkSolution(accusation) {
     return (
