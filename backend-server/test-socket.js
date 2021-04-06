@@ -1,7 +1,8 @@
 const io = require("socket.io-client");
 require('dotenv').config();
 const uuid = process.env.uuid;
-const socket = io('ws://localhost:3000',
+const port = process.env.port;
+const socket = io(`ws://localhost:${port}`,
   {
     query: {
       gameId: '1',
