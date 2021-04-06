@@ -5,12 +5,9 @@ Thanks to:
     https://stackoverflow.com/questions/12219727/dragging-moving-a-qpushbutton-in-pyqt
 """
 # from PySide6 import Qt
-from PySide6.QtCore import SIGNAL, Qt, QRect, QSize
-from PySide6.QtGui import QPainter
-from PySide6.QtWidgets import (QLabel, QWidget, QPushButton,
-                               QTextEdit, QVBoxLayout, QHBoxLayout,
-                               QFrame, QSplitter, QDialog, QMessageBox,
-                               QFormLayout, QComboBox)
+from PySide6 import QtCore  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
+from PySide6 import QtGui  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
+from PySide6 import QtWidgets  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
 
 from interface.game_objects import Rooms, Suspects, Weapons
 
@@ -18,7 +15,7 @@ from interface.game_objects import Rooms, Suspects, Weapons
 from __feature__ import snake_case, true_property  # pylint: disable=unused-import # used for making Qt pythonic
 
 
-class GamePiece(QLabel):
+class GamePiece(QtWidgets.QLabel):
     """Moveable Game Piece
 
     Attributes:
@@ -38,13 +35,13 @@ class GamePiece(QLabel):
 
     def mouse_press_event(self, event):
         """Sets Click or Move based on mouse button"""
-        if event.button() == Qt.LeftButton:
+        if event.button() == QtCore.Qt.LeftButton:
             self._mouse_press_pos = event.global_pos()
             self._mouse_move_pos = event.global_pos()
 
     def mouse_move_event(self, event):
         """Updates button position when mouse moves"""
-        if event.buttons() == Qt.LeftButton:
+        if event.buttons() == QtCore.Qt.LeftButton:
             # adjust offset from clicked point to origin of widget
             curr_pos = self.map_to_global(self.pos)
             global_pos = event.global_pos()
@@ -63,21 +60,21 @@ class GamePiece(QLabel):
         if width < 1 or height < 1:
             self.hide()
         else:
-            new_size = QSize()
+            new_size = QtCore.QSize()
             new_size.set_height(height)
             new_size.set_width(width)
             self.size = new_size
-            painter = QPainter(self)
-            painter.render_hint = QPainter.SmoothPixmapTransform
-            rect = QRect(self.rect.x(),
-                         self.rect.y(),
-                         width,
-                         height)
+            painter = QtGui.QPainter(self)
+            painter.render_hint = QtGui.QPainter.SmoothPixmapTransform
+            rect = QtCore.QRect(self.rect.x(),
+                                self.rect.y(),
+                                width,
+                                height)
             painter.draw_pixmap(rect, self.image)
             self.raise_()
 
 
-class BoardImage(QWidget):
+class BoardImage(QtWidgets.QWidget):
     """Widget containing scalable game board
 
     Attributes:
@@ -99,27 +96,27 @@ class BoardImage(QWidget):
                 pyqt-automatically-resizing-widget-picture
         """
         super().paint_event(event)
-        painter = QPainter(self)
-        painter.render_hint = QPainter.SmoothPixmapTransform
+        painter = QtGui.QPainter(self)
+        painter.render_hint = QtGui.QPainter.SmoothPixmapTransform
         # Pylint cannot find width() and height() functions
         # pylint: disable=no-member
         if self.rect.height() < self.rect.width():
             self.img_width = self.ratio * self.rect.height()
-            rect = QRect((self.rect.width() - self.img_width)/2,
-                         self.rect.y(),
-                         self.img_width,
-                         self.rect.height())
+            rect = QtCore.QRect((self.rect.width() - self.img_width)/2,
+                                self.rect.y(),
+                                self.img_width,
+                                self.rect.height())
             painter.draw_pixmap(rect, self.image)
         else:
             self.img_width = self.rect.width()
-            rect = QRect((self.rect.width() - self.img_width)/2,
-                         self.rect.y(),
-                         self.img_width,
-                         self.rect.width() / self.ratio)
+            rect = QtCore.QRect((self.rect.width() - self.img_width)/2,
+                                self.rect.y(),
+                                self.img_width,
+                                self.rect.width() / self.ratio)
             painter.draw_pixmap(rect, self.image)
 
 
-class BoardWidget(QFrame):
+class BoardWidget(QtWidgets.QFrame):
     """Widget Showing Game Board and Game Pieces
 
     Attributes:
@@ -130,11 +127,11 @@ class BoardWidget(QFrame):
     def __init__(self, parent, image_mgr):
         super().__init__()
         self._parent = parent
-        self.frame_shape = QFrame.StyledPanel
+        self.frame_shape = QtWidgets.QFrame.StyledPanel
         self._parent.splitterMoved.connect(self.resize)
         self._image_mgr = image_mgr
 
-        layout = QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         self.accept_drops = True
 
         self.game_board = BoardImage(image_mgr)
@@ -155,46 +152,46 @@ class BoardWidget(QFrame):
         self.game_piece.repaint()
 
 
-class HandWidget(QWidget):
+class HandWidget(QtWidgets.QWidget):
     """Widget Showing Images for cards in Player's Hand
 
     Attributes:
-        card_layout (QHBoxLayout): Horizontal Layout where Cards are shown
+        card_layout (QtWidgets.QHBoxLayout): Horizontal Layout where Cards are shown
     """
 
     def __init__(self, parent, image_mgr):
         super().__init__()
         self._parent = parent
         self._image_mgr = image_mgr
-        self.card_layout = QHBoxLayout()
+        self.card_layout = QtWidgets.QHBoxLayout()
 
-        test_card = QLabel(self)
+        test_card = QtWidgets.QLabel(self)
         test_card.pixmap = image_mgr.get_image('card')
         self.card_layout.add_widget(test_card)
         self.set_layout(self.card_layout)
 
 
-class ActionsWidget(QWidget):
+class ActionsWidget(QtWidgets.QWidget):
     """Widget showing Action History and Suggestion/Accusation button
 
     Attributes:
-        action_log (QTextEdit): Text box for showing action history
+        action_log (QtWidgets.QTextEdit): Text box for showing action history
     """
 
     def __init__(self, parent):
         super().__init__()
         self._parent = parent
 
-        layout = QHBoxLayout()
-        self.action_log = QTextEdit('> Action History Here', self)
+        layout = QtWidgets.QHBoxLayout()
+        self.action_log = QtWidgets.QTextEdit('> Action History Here', self)
         self.action_log.read_only = True
         layout.add_widget(self.action_log)
 
-        button_layout = QVBoxLayout()
-        suggestion_button = QPushButton('Make Suggestion')
-        accusation_button = QPushButton('Make Accusation')
+        button_layout = QtWidgets.QVBoxLayout()
+        suggestion_button = QtWidgets.QPushButton('Make Suggestion')
+        accusation_button = QtWidgets.QPushButton('Make Accusation')
         self.connect(accusation_button,
-                     SIGNAL('clicked()'),
+                     QtCore.SIGNAL('clicked()'),
                      self.make_accusation)
         button_layout.add_widget(suggestion_button)
         button_layout.add_widget(accusation_button)
@@ -206,17 +203,17 @@ class ActionsWidget(QWidget):
         """Create Form to Select Accusation, then submit"""
         accusation = AccusationWidget(self)
         status = accusation.exec_()
-        if status == QDialog.Accepted:
+        if status == QtWidgets.QDialog.Accepted:
             result, message = self._parent.game_instance.make_accusation(accusation.person,
                                                                          accusation.place,
                                                                          accusation.thing)
             if result:
-                QMessageBox.information(self, 'Result', message)
+                QtWidgets.QMessageBox.information(self, 'Result', message)
             else:
-                QMessageBox.warning(self, 'Oops', message)
+                QtWidgets.QMessageBox.warning(self, 'Oops', message)
 
 
-class GameWidget(QSplitter):
+class GameWidget(QtWidgets.QSplitter):
     """Central Game Layout
 
     Attributes:
@@ -228,7 +225,7 @@ class GameWidget(QSplitter):
     """
 
     def __init__(self, parent, game_instance, image_mgr):
-        super().__init__(Qt.Vertical)
+        super().__init__(QtCore.Qt.Vertical)
         self.game_instance = game_instance
         self._image_mgr = image_mgr
         self._parent = parent
@@ -240,8 +237,8 @@ class GameWidget(QSplitter):
         self.add_widget(self.game_board)
         self.set_stretch_factor(0, 30)
 
-        widget = QFrame(self)
-        lower_layout = QVBoxLayout()
+        widget = QtWidgets.QFrame(self)
+        lower_layout = QtWidgets.QVBoxLayout()
         self.hand_widget = HandWidget(self, self._image_mgr)
         lower_layout.add_widget(self.hand_widget)
 
@@ -251,16 +248,16 @@ class GameWidget(QSplitter):
         self.add_widget(widget)
 
 
-class AccusationWidget(QDialog):
+class AccusationWidget(QtWidgets.QDialog):
     """Create a form for making Accusations
 
     Attributes:
         person (str): Suspect Selected for Accusation
         place (str): Room Selected for Accusation
         thing (str): Weapon Selected for Accusation
-        suspect_selector (QComboBox): Dropdown for selecting suspects
-        room_selector (QComboBox): Dropdown for selecting rooms
-        weapon_selector (QComboBox): Dropdown for selecting weapons
+        suspect_selector (QtWidgets.QComboBox): Dropdown for selecting suspects
+        room_selector (QtWidgets.QComboBox): Dropdown for selecting rooms
+        weapon_selector (QtWidgets.QComboBox): Dropdown for selecting weapons
     """
 
     def __init__(self, parent):
@@ -270,25 +267,25 @@ class AccusationWidget(QDialog):
         self.place = None
         self.thing = None
 
-        form = QFormLayout()
-        self.suspect_selector = QComboBox(self)
+        form = QtWidgets.QFormLayout()
+        self.suspect_selector = QtWidgets.QComboBox(self)
         self.suspect_selector.add_items(['None'] + Suspects.get_suspect_list())
-        form.add_row(QLabel('Suspect'), self.suspect_selector)
-        self.room_selector = QComboBox(self)
+        form.add_row(QtWidgets.QLabel('Suspect'), self.suspect_selector)
+        self.room_selector = QtWidgets.QComboBox(self)
         self.room_selector.add_items(['None'] + Rooms.get_room_list())
-        form.add_row(QLabel('Room'), self.room_selector)
-        self.weapon_selector = QComboBox(self)
+        form.add_row(QtWidgets.QLabel('Room'), self.room_selector)
+        self.weapon_selector = QtWidgets.QComboBox(self)
         self.weapon_selector.add_items(['None'] + Weapons.get_weapon_list())
-        form.add_row(QLabel('Weapon'), self.weapon_selector)
+        form.add_row(QtWidgets.QLabel('Weapon'), self.weapon_selector)
 
-        accept_button = QPushButton('Accuse', self)
+        accept_button = QtWidgets.QPushButton('Accuse', self)
         self.connect(accept_button,
-                     SIGNAL('clicked()'),
+                     QtCore.SIGNAL('clicked()'),
                      self.accept)
 
-        cancel_button = QPushButton('Cancel', self)
+        cancel_button = QtWidgets.QPushButton('Cancel', self)
         self.connect(cancel_button,
-                     SIGNAL('clicked()'),
+                     QtCore.SIGNAL('clicked()'),
                      self.reject)
         form.add_row(accept_button, cancel_button)
         self.set_layout(form)
@@ -300,10 +297,16 @@ class AccusationWidget(QDialog):
         self.thing = self.weapon_selector.current_text
 
         if self.person == 'None':
-            QMessageBox.warning(self, 'Oops', 'Please Select a Suspect')
+            QtWidgets.QMessageBox.warning(self,
+                                          'Oops',
+                                          'Please Select a Suspect')
         elif self.place == 'None':
-            QMessageBox.warning(self, 'Oops', 'Please Select a Room')
+            QtWidgets.QMessageBox.warning(self,
+                                          'Oops',
+                                          'Please Select a Room')
         elif self.thing == 'None':
-            QMessageBox.warning(self, 'Oops', 'Please Select a Weapon')
+            QtWidgets.QMessageBox.warning(self,
+                                          'Oops',
+                                          'Please Select a Weapon')
         else:
             super().accept()

@@ -3,8 +3,8 @@
 import sys
 from argparse import ArgumentParser
 
-from PySide6 import QtCore
-from PySide6 import QtWidgets
+from PySide6 import QtCore  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
+from PySide6 import QtWidgets  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
 
 from interface.clueless_app import Clueless
 from gui.main_gui import MainWindow

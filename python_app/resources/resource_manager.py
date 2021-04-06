@@ -1,14 +1,14 @@
 """Loads All Image Resources"""
 import os
 import glob
-from PySide6.QtGui import QPixmap
+from PySide6 import QtGui  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
 
 
 class ImageManager:
     """Loads Image Files
 
     Attributes:
-        images (Dict{QPixmap}): Dictionary of QPixmap objects
+        images (Dict{str: QtGui.QPixmap}): Dictionary of QPixmap objects
     """
 
     def __init__(self):
@@ -21,8 +21,8 @@ class ImageManager:
                               recursive=True):
             filename, ext = os.path.splitext(os.path.basename(item))
             if ext in ['.png', '.jpg']:
-                self.images[filename] = QPixmap(item)
+                self.images[filename] = QtGui.QPixmap(item)
 
     def get_image(self, name):
         """Get Image Object for selected filename"""
-        return self.images.get(name, QPixmap())
+        return self.images.get(name, QtGui.QPixmap())
