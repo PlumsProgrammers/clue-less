@@ -1,5 +1,5 @@
 const { v4 } = require('uuid');
-const { app } = require('../app')
+const app = require('../app')
 
 exports.Player = class {
   constructor(username) {

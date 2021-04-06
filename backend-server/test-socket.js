@@ -1,9 +1,11 @@
 const io = require("socket.io-client");
+require('dotenv').config();
+const uuid = process.env.uuid;
 const socket = io('ws://localhost:3000',
   {
     query: {
       gameId: '1',
-      uuid: 'asdasdasasdasdasda'
+      uuid: uuid
     }
   });
 
@@ -16,6 +18,17 @@ socket.on("disconnect", () => {
   console.log("Disconnected!")
 });
 
-socket.onAny((event, ..._args) => {
-  console.log(`${event}`);
+socket.onAny((event, ...args) => {
+  switch (event) {
+    case 'game':
+      console.log(`${args[0]}`);
+      break;
+    case 'message':
+      `message: ${console.log(args[0])}`
+      break;
+    case 'private':
+      `private message: ${console.log(args[0])}`
+      break;
+    default: console.log(event, args.join(''))
+  }
 });
