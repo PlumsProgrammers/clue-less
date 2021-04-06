@@ -3,8 +3,8 @@
 import sys
 from argparse import ArgumentParser
 
-from PySide6.QtCore import QRect
-from PySide6.QtWidgets import QApplication
+from PySide6 import QtCore
+from PySide6 import QtWidgets
 
 from interface.clueless_app import Clueless
 from gui.main_gui import MainWindow
@@ -34,12 +34,12 @@ def main():
 
     host_found = main_game.test_connection()
     if host_found:
-        app = QApplication(sys.argv)
+        app = QtWidgets.QApplication(sys.argv)
         gui = MainWindow(main_game)
         gui.window_title = 'Clue-less'
-        gui.geometry = QRect(0, 0,
-                             app.primary_screen.size.width(),
-                             app.primary_screen.size.width())
+        gui.geometry = QtCore.QRect(0, 0,
+                                    app.primary_screen.size.width(),
+                                    app.primary_screen.size.width())
         if gui.show():
             app.exec_()
 
