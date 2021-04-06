@@ -7,7 +7,7 @@ module.exports = (req, res) => {
     try {
       let game = Game.find(req.body.gameId)
       game.endTurn(req.body.username)
-      res.json('')
+      res.json('Turn has ended')
     } catch(e) {
       res.status(400)
       res.json(e.message)

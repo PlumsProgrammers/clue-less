@@ -109,7 +109,6 @@ const Game = class Game{
   suggestionResponse(username, card = null) {
     if (this.status !== 'playing') throw new Error("Game is not in progress.")
     if (this.turn.suggestTo.username !== username) throw new Error("Not your turn to respond.")
-    if (this.turn.phase !== turnPhases.MID_SUGGESTION) throw new Error("Already made a suggestion.")
     if (card == null) {
       if (this.turn.suggestTo.cards.map((card) => card.name).some(card => Object.values(this.turn.currentSuggestion).includes(card)))
         throw new Error("You must show a card, since you can disprove the suggestion.")

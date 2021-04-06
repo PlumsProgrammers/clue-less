@@ -6,8 +6,9 @@ module.exports = (req, res) => {
   if (parameterCheck(req, requiredParams)) {
     try {
       let game = Game.find(req.body.gameId)
-      let targetPlayer = game.findPlayer('targetUsername')
+      let targetPlayer = game.players.find(player => player.username = req.body.targetUsername)
       targetPlayer.broadcast(`${req.body.username}: ${req.body.message}`, 'private')
+      res.json("Sent")
     } catch(e) {
       res.status(400)
       res.json(e.message)

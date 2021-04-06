@@ -45,17 +45,8 @@ exports.Turn = class {
   }
 
   endTurn() {
-    this.nextPlayer()
+    this.#nextPlayer()
     this.phase = turnPhases.MOVEMENT
-  }
-
-  nextPlayer() {
-    this.currentPlayer = this.#findPlayerAfterUsername(this.currentPlayer.username)
-    if (this.currentPlayer.failed) {
-      this.nextPlayer()
-    } else {
-      this.broadcast(`It is now ${this.currentPlayer.username}'s turn.`)
-    }
   }
 
   movePlayer(location) {
@@ -64,6 +55,14 @@ exports.Turn = class {
   }
 
   // Private
+  #nextPlayer() {
+    this.currentPlayer = this.#findPlayerAfterUsername(this.currentPlayer.username)
+    if (this.currentPlayer.failed) {
+      this.#nextPlayer()
+    } else {
+      this.broadcast(`It is now ${this.currentPlayer.username}'s turn.`)
+    }
+  }
 
   #findPlayerAfterUsername(username) {
     let turnIndex = this.turnOrder.map((player) => player.username).indexOf(username)

@@ -17,16 +17,4 @@ exports.Player = class {
     this.cards.push(card);
     this.broadcast(`New Card: ${card.name}`)
   }
-
-  roomName = () => this.uuid;
-  toJSON = () => {
-    return {
-      username: this.username,
-      uuid: this.uuid,
-      cards: this.cards,
-      suspect: this.suspect,
-      location: this.location,
-      failed: this.failed
-    }
-  }
 }

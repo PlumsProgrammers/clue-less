@@ -7,6 +7,7 @@ module.exports = (req, res) => {
     try {
       let game = Game.find(req.body.gameId)
       game.broadcast(`${req.body.username}: ${req.body.message}`, 'message')
+      res.json("Sent")
     } catch(e) {
       res.status(400)
       res.json(e.message)
