@@ -21,14 +21,14 @@ class Suspects(Enum):
         return suspects.get(re.sub(r'[^a-z]+', '', name.lower()), None)
 
     @staticmethod
-    def print_suspects():
-        """Print all Rooms"""
-        print('Miss Scarlet, '
-              'Mr. Green, '
-              'Colonel Mustard, '
-              'Professor Plum, '
-              'Mrs. Peacock, '
-              'Mrs. White')
+    def get_suspect_list():
+        """Returns list of all Suspects"""
+        return ['Miss Scarlet',
+                'Mr. Green',
+                'Colonel Mustard',
+                'Professor Plum',
+                'Mrs. Peacock',
+                'Mrs. White']
 
 
 class Rooms(Enum):
@@ -50,10 +50,11 @@ class Rooms(Enum):
         return rooms.get(re.sub(r'[^a-z]+', '', room_name.lower()), None)
 
     @staticmethod
-    def print_rooms():
-        """Print all Rooms"""
-        print('Ballroom, Billiard Room, Conservatory, '
-              'Dining Room, Hall, Kitchen, Library, Lounge, Study')
+    def get_room_list():
+        """Returns list of all Rooms"""
+        return ['Ballroom', 'Billiard Room', 'Conservatory',
+                'Dining Room', 'Hall', 'Kitchen',
+                'Library', 'Lounge', 'Study']
 
 
 class Weapons(Enum):
@@ -72,26 +73,24 @@ class Weapons(Enum):
         return weapons.get(re.sub(r'[^a-z]+', '', weapon_name.lower()), None)
 
     @staticmethod
-    def print_weapons():
-        """Print all Rooms"""
-        print('Candlestick, '
-              'Dagger, '
-              'Lead Pipe, '
-              'Revolver, '
-              'Rope, '
-              'Wrench')
+    def get_weapon_list():
+        """Returns list of all Rooms"""
+        return ['Candlestick',
+                'Dagger',
+                'Lead Pipe',
+                'Revolver',
+                'Rope',
+                'Wrench']
 
-# pylint: disable=too-many-instance-attributes # need to move game_name and id to game
+
 class Player:  # pylint: disable=too-few-public-methods # Will need updates
     """Store current Player information"""
 
     def __init__(self):
         self.username = None
         self.uuid = None
-        self.game_id = None
-        self.game_name = None
         self.suspect = None
         self.cards = []
         self.location = None
-        self.status = None
+        self.turn = None
         self.guess = (None, None, None)
