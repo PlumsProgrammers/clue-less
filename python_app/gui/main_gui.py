@@ -43,6 +43,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.add_chat_gui()
         self.add_game_gui()
+
+        self.central_widget.splitterMoved.connect(  # pylint: disable=no-member # cant find connect
+            self.game_gui.game_board.resize)
         self.add_clue_tracker_gui()
 
         self.set_central_widget(self.central_widget)
@@ -70,7 +73,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def update_game_info_text(self):
         """Update Game Information text"""
         self.game_info.text = f'Game ID: {self.game_instance.game_id} | ' + \
-                              f'Status: {self.game_instance.status}'
+            f'Status: {self.game_instance.status}'
 
     def add_game_gui(self):
         """Create game GUI Layout"""
@@ -142,6 +145,8 @@ class MainWindow(QtWidgets.QMainWindow):
         result, message = self.game_instance.start_game()
         if result:
             QtWidgets.QMessageBox.information(self, 'Success', message.title())
+            self.game_gui.game_board.set_player(
+                self.game_instance.player.suspect)
 
         if not result:
             QtWidgets.QMessageBox.warning(self, 'Oops', message.title())
@@ -153,6 +158,8 @@ class MainWindow(QtWidgets.QMainWindow):
         result, message = self.game_instance.check_game_status()
         if result:
             QtWidgets.QMessageBox.information(self, 'Success', message.title())
+            self.game_gui.game_board.set_player(
+                self.game_instance.player.suspect)
 
         if not result:
             QtWidgets.QMessageBox.warning(self, 'Oops', message.title())

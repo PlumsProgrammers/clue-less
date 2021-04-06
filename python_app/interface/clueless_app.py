@@ -85,7 +85,6 @@ class Clueless:
             for player in players:
                 if player['username'] == self.player.username:
                     self.player.uuid = player['uuid']
-                    self.player.suspect = player['suspect']
                     break
             message = f'Joining Game as {self.player.username}\n' + \
                       f'Invite your friends with Game Code {self.game_id}'
@@ -105,6 +104,11 @@ class Clueless:
                                 )
         if response.status_code == 200:
             self.status = response.json()['status']
+            players = response.json()['players']
+            for player in players:
+                if player['username'] == self.player.username:
+                    self.player.suspect = player['suspect']
+                    break
             return True, 'Game Started'
         if response.status_code == 400:
             return False, response.json()
@@ -128,6 +132,21 @@ class Clueless:
                             break
             return True, f'Game Status: {self.status}'
         return False, 'Could Not Find Game'
+
+    def move_player(self, room):
+        """Move Player to selected Room"""
+        self.player.location = room
+        move_path = os.path.join(self._config.get_host(),
+                                 Router.get_path(Router.MOVE))
+        response = requests.put(move_path,
+                                json=Router.get_json_params(game=self,
+                                                            player=self.player,
+                                                            route=Router.MOVE))
+        if response.status_code == 200:
+            return True, f'Success! Moved to {room}.'
+        if response.status_code == 400:
+            return False, response.json()
+        return False, 'Unknown Error'
 
     def make_accusation(self, person, place, thing):
         """Make Accusation"""

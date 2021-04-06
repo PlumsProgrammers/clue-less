@@ -32,7 +32,8 @@ class Router(Enum):
     CHECK_GAME_STATUS = 5
 
     SET_CHARACTER = 6
-    ACCUSATION = 7
+    MOVE = 7
+    ACCUSATION = 8
 
     @staticmethod
     def get_path(route=None):
@@ -47,6 +48,7 @@ class Router(Enum):
 
                  Router.SET_CHARACTER: 'players/selectSuspect',
 
+                 Router.MOVE: 'gameplay/move',
                  Router.ACCUSATION: 'gameplay/accusation'}
         return paths.get(route, None)
 
@@ -62,6 +64,9 @@ class Router(Enum):
                        Router.SET_CHARACTER: {'gameId': game.game_id,
                                               'uuid': player.uuid,
                                               'suspect': player.suspect},
+                       Router.MOVE: {'gameId': game.game_id,
+                                     'username': player.username,
+                                     'location': player.location},
                        Router.ACCUSATION: {'gameId': game.game_id,
                                            'username': player.username,
                                            'accusation': {'suspect': player.guess[0],
