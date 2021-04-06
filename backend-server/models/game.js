@@ -1,10 +1,10 @@
 const {Turn, turnPhases} = require("./turn");
 const {Player} = require("./player");
-const {suspects} = require("../collections/suspects");
 const {shuffle} = require("../helpers/cardManagement");
 const {suspectCards, weaponCards, roomCards} = require("../collections/cards");
 const app = require('../app')
 const {weaponList} = require("../collections/weapons");
+const {suspects} = require("../collections/suspects");
 const {locations} = require("../collections/locations");
 
 const possibleLocations = locations.filter(location => location.suggestionsAllowed).map(location => location.name)
@@ -55,7 +55,8 @@ const Game = class Game{
     this.status = 'playing'
   }
 
-  addPlayer = (username) => {
+  addPlayer = (username, password = null) => {
+    if (this.password != null && this.password !== password) throw new Error('Incorrect Password for Game.')
     if (this.status !== 'waiting') throw new Error('Game has already started.');
     if (this.players.length > 6) throw new Error('Lobby is full.');
     if (this.players.some((player) => player.username === username)) throw new Error('Username already in game.');
@@ -95,24 +96,27 @@ const Game = class Game{
     let suggestingPlayer = this.turn.currentPlayer
     if (this.status !== 'playing') throw new Error("Game is not in progress.")
     if (suggestingPlayer.username !== username) throw new Error("Not your turn.")
-    if (!possibleLocations.includes(suggestion.location)) throw new Error("Not a valid location.")
+    if (!possibleLocations.includes(suggestion.room)) throw new Error("Not a valid location.")
     if (!possibleSuspects.includes(suggestion.suspect)) throw new Error("Not a valid suspect.")
     if (!weaponList.includes(suggestion.weapon)) throw new Error("Not a valid weapon.")
-    if (suggestion.location !== suggestingPlayer.location.name) throw new Error("Must suggest the room you are in.")
+    if (suggestion.room !== suggestingPlayer.location.name) throw new Error("Must suggest the room you are in.")
     if (![turnPhases.MOVEMENT, turnPhases.SUGGESTION].includes(this.turn.phase)) throw new Error("Already made a suggestion.")
 
-    this.broadcast(`${suggestingPlayer.username} is making a suggestion of: ${suggestion}`)
+    this.broadcast(`${suggestingPlayer.username} is making a suggestion of: ${JSON.stringify(suggestion)}`)
     this.turn.suggest(suggestion)
   }
 
   suggestionResponse(username, card = null) {
     if (this.status !== 'playing') throw new Error("Game is not in progress.")
-    if (this.turn.suggestTo !== username) throw new Error("Not your turn to respond.")
+    if (this.turn.suggestTo.username !== username) throw new Error("Not your turn to respond.")
     if (this.turn.phase !== turnPhases.MID_SUGGESTION) throw new Error("Already made a suggestion.")
-    if (card == null || this.turn.suggestTo.cards.map((card) => card.name).some(card => this.turn.currentSuggestion.values.includes(card)))
-      throw new Error("You must show a card, since you can disprove the suggestion.")
-    if (!this.turn.suggestTo.cards.map((card) => card.name).includes(card)) throw new Error("You can't show a card you don't have.")
-    if (!this.turn.currentSuggestion.values.includes(card.name)) throw new Error("That card doesn't disprove the suggestion.")
+    if (card == null) {
+      if (this.turn.suggestTo.cards.map((card) => card.name).some(card => Object.values(this.turn.currentSuggestion).includes(card)))
+        throw new Error("You must show a card, since you can disprove the suggestion.")
+    } else {
+      if (!this.turn.suggestTo.cards.map((card) => card.name).includes(card)) throw new Error("You can't show a card you don't have.")
+      if (!Object.values(this.turn.currentSuggestion).includes(card)) throw new Error("That card doesn't disprove the suggestion.")
+    }
 
     this.turn.suggestionResponse(card)
   }
