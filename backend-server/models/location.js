@@ -5,5 +5,5 @@ exports.Location = class {
     this.possibleMovements = possibleMovements
   }
 
-  canMoveTo = (location) => this.possibleMovements.include(location)
+  canMoveTo = (location) => this.possibleMovements.includes(location)
 }

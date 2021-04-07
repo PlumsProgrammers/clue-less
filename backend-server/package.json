@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon app.js",
+    "start": "nodemon start.js",
     "test": "npm run lint && npm run coverage",
     "jasmine": "jasmine JASMINE_CONFIG_PATH=tests/jasmine.json",
     "generate": "node generate.js",
     "coverage": "npm run generate  && nyc npm run jasmine",
-    "lint": "eslint routes handlers app.js"
+    "lint": "eslint routes handlers start.js"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +29,7 @@
     "glob": "^7.1.6",
     "jasmine": "^3.6.4",
     "nodemon": "^2.0.7",
-    "nyc": "^15.1.0"
+    "nyc": "^15.1.0",
+    "socket.io-client": "^4.0.1"
   }
 }

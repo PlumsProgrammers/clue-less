@@ -414,6 +414,179 @@ Body:
 
 ---
 
+### End Turn
+> PUT /gameplay/end_turn
+
+Ends the player's turn.
+
+Required Params - `gameId` `username`
+
+Body:
+```JSON
+{
+  "gameId": 1,
+  "username": "TestyMcTester"
+}
+```
+
+#### Returns
+
+`400`
+```JSON
+"Game not found."
+```
+
+`400`
+```JSON
+"Game is not in progress."
+```
+
+`400`
+```JSON
+"Not your turn."
+```
+
+`200`
+```JSON
+"Turn has ended."
+```
+
+---
+
+
+### Suggestion
+> PUT /gameplay/suggestion
+
+Player makes a suggestion.
+
+Required Params - `gameId` `username` `suggestion`
+
+Body:
+```JSON
+{
+  "gameId": 1,
+  "username": "TestyMcTester",
+  "suggestion": {
+    "suspect": "Colonel Mustard",
+    "weapon": "Candlestick",
+    "room": "Ballroom"
+  }
+}
+```
+
+#### Returns
+
+`400`
+```JSON
+"Game not found."
+```
+
+`400`
+```JSON
+"Game is not in progress."
+```
+
+`400`
+```JSON
+"Not your turn."
+```
+
+`400`
+```JSON
+"Not a valid location."
+```
+
+`400`
+```JSON
+"Not a valid suspect."
+```
+
+`400`
+```JSON
+"Not a valid weapon."
+```
+
+`400`
+```JSON
+"Must suggest the room you are in."
+```
+
+`400`
+```JSON
+"Already made a suggestion."
+```
+
+`200`
+```JSON
+"Suggestion Accepted"
+```
+
+---
+
+
+### Suggestion Response
+> PUT /gameplay/suggestion_response
+
+Responds to the suggestion.
+
+Required Params - `gameId` `username`
+Optional Params - `card`
+
+Body:
+```JSON
+{
+  "gameId": 1,
+  "username": "TestyMcTester"
+}
+```
+
+```JSON
+{
+  "gameId": 1,
+  "username": "TestyMcTester",
+  "card": "Candlestick"
+}
+```
+
+#### Returns
+
+`400`
+```JSON
+"Game not found."
+```
+
+`400`
+```JSON
+"Game is not in progress."
+```
+
+`400`
+```JSON
+"Not your turn to respond."
+```
+
+`400`
+```JSON
+"You must show a card, since you can disprove the suggestion."
+```
+
+`400`
+```JSON
+"You can't show a card you don't have."
+```
+
+`400`
+```JSON
+"That card doesn't disprove the suggestion."
+```
+
+`200`
+```JSON
+"Response Accepted"
+```
+
+---
+
 
 ### Accusation
 > PUT /gameplay/accusation
@@ -451,15 +624,82 @@ Body:
 "Not your turn."
 ```
 
+`200`
 ```JSON
 "TestyMcTester has won!"
 ```
 
+`200`
 ```JSON
 "TestyMcTester made a bad guess and has failed"
 ```
 
+`200`
 ```JSON
 "Everyone has failed, the game ends with no winner."
 ```
 
+
+## Messages
+
+---
+
+### Game
+> PUT /messages/game
+
+Sends a message to all players in the game.
+
+Required Params - `gameId` `username` `message`
+
+Body:
+```JSON
+{
+  "gameId": 1,
+  "username": "TestyMcTester",
+  "message": "Hi Everyone"
+}
+```
+
+#### Returns
+
+`400`
+```JSON
+"Game not found."
+```
+
+`200`
+```JSON
+"Sent"
+```
+
+---
+
+
+### Private
+> PUT /gameplay/accusation
+
+Sends a message to the player specified only.
+
+Required Params - `gameId` `username` `targetUsername` `message`
+
+Body:
+```JSON
+{
+  "gameId": 1,
+  "username": "TestyMcTester",
+  "targetUsername": "Donald",
+  "message": "Hi Donald"
+}
+```
+
+#### Returns
+
+`400`
+```JSON
+"Game not found."
+```
+
+`200`
+```JSON
+"Sent"
+```
