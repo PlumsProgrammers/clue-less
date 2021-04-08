@@ -82,7 +82,7 @@ class PlayerPiece(GamePiece):
 
     def mouse_move_event(self, event):
         """Updates button position when mouse moves"""
-        if event.buttons() == Qt.LeftButton:
+        if event.buttons() == QtGui.Qt.LeftButton:
             # adjust offset from clicked point to origin of widget
             curr_pos = self.map_to_global(self.pos)
             global_pos = event.global_pos()
@@ -125,7 +125,7 @@ class PlayerPiece(GamePiece):
             self._moving = False
 
 
-class BoardImage(QLabel):
+class BoardImage(QtWidgets.QLabel):
     """Widget containing scalable game board
 
     Attributes:
