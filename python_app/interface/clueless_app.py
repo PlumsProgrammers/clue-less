@@ -6,9 +6,10 @@ import requests
 
 from interface.config import ConfigManager, Router
 from interface.game_objects import Player
+from interface.web_socket import get_socket
 
 
-class Clueless:
+class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs required
     """Runs local Clue-less instance
 
     Attributes:
@@ -19,6 +20,11 @@ class Clueless:
     def __init__(self, verbose):
         self._verbose = verbose
         self._config = ConfigManager()
+
+        self.socket = get_socket()
+        self.socket.setup(game=self,
+                          config=self._config)
+        self.socket.start()
 
         self.game_name = None
         self.game_id = None
@@ -54,11 +60,13 @@ class Clueless:
 
         create_game_path = os.path.join(self._config.get_host(),
                                         Router.get_path(Router.CREATE_GAME))
+        json = Router.get_json_params(game=self,
+                                      player=self.player,
+                                      route=Router.CREATE_GAME)
+        if not self.password:
+            json.pop('password', None)
         response = requests.post(create_game_path,
-                                 json=Router.get_json_params(game=self,
-                                                             player=self.player,
-                                                             route=Router.CREATE_GAME)
-                                 )
+                                 json=json)
         if response.status_code == 201:
             self.game_id = int(response.json()["id"])
             return True, None
@@ -74,11 +82,14 @@ class Clueless:
 
         join_game_path = os.path.join(self._config.get_host(),
                                       Router.get_path(Router.JOIN_GAME))
+        json = Router.get_json_params(game=self,
+                                      player=self.player,
+                                      route=Router.JOIN_GAME)
+        if not self.password:
+            json.pop('password', None)
         response = requests.post(join_game_path,
-                                 json=Router.get_json_params(game=self,
-                                                             player=self.player,
-                                                             route=Router.JOIN_GAME)
-                                 )
+                                 json=json)
+
         if response.status_code == 200:
             self.status = response.json()['status']
             players = response.json()['players']
@@ -88,6 +99,7 @@ class Clueless:
                     break
             message = f'Joining Game as {self.player.username}\n' + \
                       f'Invite your friends with Game Code {self.game_id}'
+            self.socket.start_connection()
             return True, message
         if response.status_code == 400:
             return False, response.json()
