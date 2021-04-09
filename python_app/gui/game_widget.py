@@ -4,7 +4,6 @@ Thanks to:
     https://zetcode.com/gui/pyqt5/dragdrop/
     https://stackoverflow.com/questions/12219727/dragging-moving-a-qpushbutton-in-pyqt
 """
-# from PySide6 import Qt
 from PySide6 import QtCore  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
 from PySide6 import QtGui  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
 from PySide6 import QtWidgets  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
@@ -183,8 +182,7 @@ class ActionsWidget(QtWidgets.QWidget):
         self._parent = parent
 
         layout = QtWidgets.QHBoxLayout()
-        self.action_log = QtWidgets.QTextEdit('> Action History Here', self)
-        self.action_log.read_only = True
+        self.action_log = LogBox(self)
         layout.add_widget(self.action_log)
 
         button_layout = QtWidgets.QVBoxLayout()
@@ -211,6 +209,33 @@ class ActionsWidget(QtWidgets.QWidget):
                 QtWidgets.QMessageBox.information(self, 'Result', message)
             else:
                 QtWidgets.QMessageBox.warning(self, 'Oops', message)
+
+    def update_log(self, event):
+        """Add message to event log"""
+        event_msg = event.replace('Message:', '').strip()
+        self.action_log.update_text(f'\n> {event_msg}')
+
+
+class LogBox(QtWidgets.QScrollArea):
+    """Creates a scrollable text box for logging actions
+    Source: https://www.geeksforgeeks.org/pyqt5-scrollable-label/
+    """
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.style_sheet = 'background-color: white'
+        self.widget_resizable = True
+        content = QtWidgets.QWidget(self)
+        self.set_widget(content)
+        layout = QtWidgets.QVBoxLayout(content)
+        self.log = QtWidgets.QLabel(content)
+        self.log.alignment = QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop
+        self.log.word_wrap = True
+        layout.add_widget(self.log)
+
+    def update_text(self, text):
+        """Appends action to log box"""
+        self.log.text += text
 
 
 class GameWidget(QtWidgets.QSplitter):
@@ -246,6 +271,10 @@ class GameWidget(QtWidgets.QSplitter):
         lower_layout.add_widget(self.action_widget)
         widget.set_layout(lower_layout)
         self.add_widget(widget)
+
+    def update_log(self, event):
+        """Pass events to Action Log"""
+        self.action_widget.update_log(event)
 
 
 class AccusationWidget(QtWidgets.QDialog):

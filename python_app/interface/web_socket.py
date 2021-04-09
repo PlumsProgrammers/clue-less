@@ -11,17 +11,19 @@ class WebSocket(QtCore.QThread):
     def __init__(self):
         super().__init__()
         self._config = None
-        self.running = False
+        self.gui = None
         self.game_instance = None
         self.socket = socketio.Client()
 
-    def setup(self, game, config):
+    def setup(self, gui, game, config):
         """Sets up required attributes for connecting to game
 
         Args:
+            gui (MainWindow): Clueless GUI main window instance
             game (Clueless): Game Insance that the Socket is communicating to
             config (ConfigManager): Manages path to Clueless Server
         """
+        self.gui = gui
         self.game_instance = game
         self._config = config
 
@@ -55,39 +57,45 @@ def get_socket():
 def connect():
     """Method that runs on Websocket connection"""
     if thread.game_instance is not None:
-        thread.game_instance.event('Connected')
+        thread.gui.socket_event(event_type='status',
+                                event='Connected')
 
 
 @ sio.event
 def connect_error(error):
     """Method that runs on Websocket connection error"""
     if thread.game_instance is not None:
-        thread.game_instance.event(f'Connection Error: {error}')
+        thread.gui.socket_event(event_type='status',
+                                event=f'Connection Error: {error}')
 
 
 @ sio.event
 def disconnect():
     """Method that runs when Websocket disconnects"""
     if thread.game_instance is not None:
-        thread.game_instance.event('Disconnected')
+        thread.gui.socket_event(event_type='status',
+                                event='Disconnected')
 
 
 @ sio.on('game')
 def game_event(data):
     """Method handles all Game events"""
     if thread.game_instance is not None:
-        thread.game_instance.event(f'Message: {data}')
+        thread.gui.socket_event(event_type='event',
+                                event=f'Message: {data}')
 
 
 @ sio.on('message')
 def group_message(data):
     """Method handles all Whole Game messages"""
     if thread.game_instance is not None:
-        thread.game_instance.event(f'Message: {data}')
+        thread.gui.socket_message(msg_type='group',
+                                  message=f'Message: {data}')
 
 
 @ sio.on('private')
 def private_message(data):
     """Method handles all Private message"""
     if thread.game_instance is not None:
-        thread.game_instance.event(f'Message: {data}')
+        thread.gui.socket_message(msg_type='private',
+                                  message=f'Message: {data}')
