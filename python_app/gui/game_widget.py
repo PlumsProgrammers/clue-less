@@ -242,6 +242,7 @@ class BoardWidget(QtWidgets.QFrame):  # pylint: disable=too-many-instance-attrib
 
     def find_closest_room(self, position):
         """Finds closest room to given screen position"""
+        position = self.map_from_global(position)
         self.update_room_positions()
         new_room = None
         min_dist = -1
