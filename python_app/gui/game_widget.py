@@ -92,6 +92,7 @@ class PlayerPiece(GamePiece):
             self._mouse_move_pos = global_pos
 
     def mouse_release_event(self, event):
+        """Overrides Qt Mouse Release to trigger Moving Suspect"""
         super().mouse_release_event(event)
         if self._moving:
             old_room = self.parent.suspect_positions[self.suspect]
@@ -102,7 +103,8 @@ class PlayerPiece(GamePiece):
                 move_alert = QtWidgets.QMessageBox()
                 move_alert.icon = QtWidgets.QMessageBox.Information
                 move_alert.text = f'Move to {new_room}?'
-                move_alert.standard_buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
+                move_alert.standard_buttons = QtWidgets.QMessageBox.Ok |\
+                    QtWidgets.QMessageBox.Cancel
                 response = move_alert.exec_()
                 result = True
                 if response == QtWidgets.QMessageBox.Ok:
@@ -170,7 +172,7 @@ class BoardImage(QtWidgets.QLabel):
             painter.draw_pixmap(rect, self.image)
 
 
-class BoardWidget(QtWidgets.QFrame):
+class BoardWidget(QtWidgets.QFrame):  # pylint: disable=too-many-instance-attributes # Counting QFrame attrs
     """Widget Showing Game Board and Game Pieces
 
     Attributes:
@@ -180,8 +182,10 @@ class BoardWidget(QtWidgets.QFrame):
 
     def __init__(self, parent, image_mgr):
         super().__init__()
-        self.frame_shape = QtWidgets.QFrame.StyledPanel
         parent.splitterMoved.connect(self.resize)
+        self.frame_shape = QtWidgets.QFrame.StyledPanel
+        self.accept_drops = True
+
         self.game_instance = parent.game_instance
         self._image_mgr = image_mgr
         self.suspect_positions = Suspects.get_starting_positions()
@@ -190,7 +194,6 @@ class BoardWidget(QtWidgets.QFrame):
         self.game_pieces = {}
 
         layout = QtWidgets.QVBoxLayout()
-        self.accept_drops = True
 
         self.game_board = BoardImage(image_mgr)
         layout.add_widget(self.game_board)
@@ -208,6 +211,7 @@ class BoardWidget(QtWidgets.QFrame):
             self.move_suspect(suspect, self.suspect_positions[suspect])
 
     def update_room_positions(self):
+        """Sets position of each room on screen"""
         if self.game_board.draw_area:
             x_0, y_0, width, height = self.game_board.draw_area.get_rect()
             self.room_locations = {room: (x_0 + width*pos[0],
@@ -215,6 +219,7 @@ class BoardWidget(QtWidgets.QFrame):
                                    for room, pos in self.rel_pos.items()}
 
     def set_player(self, suspect):
+        """Creates movable piece based on player suspect"""
         if suspect:
             game_piece = PlayerPiece(self, self._image_mgr, suspect)
             old = self.game_pieces.pop(suspect, None)
@@ -226,6 +231,7 @@ class BoardWidget(QtWidgets.QFrame):
             self.resize()
 
     def move_suspect(self, suspect, room):
+        """Move given suspect to specified room"""
         self.update_room_positions()
         if suspect in self.suspect_positions.keys():
             self.suspect_positions[suspect] = room
@@ -235,6 +241,7 @@ class BoardWidget(QtWidgets.QFrame):
                 piece.move(x_0, y_0)
 
     def find_closest_room(self, position):
+        """Finds closest room to given screen position"""
         self.update_room_positions()
         new_room = None
         min_dist = -1
