@@ -42,7 +42,7 @@ def main():
                                     app.primary_screen.size.width())
         if gui.show():
             app.exec_()
-            main_game.socket.end_connection()
+            gui.socket.end_connection()
 
     print('Exiting...')
 
