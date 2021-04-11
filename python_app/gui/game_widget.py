@@ -151,7 +151,7 @@ class BoardWidget(QtWidgets.QFrame):
         self.game_piece.repaint()
 
 
-class HandWidget(QtWidgets.QWidget):
+class HandWidget(QtWidgets.QScrollArea):
     """Widget Showing Images for cards in Player's Hand
 
     Attributes:
@@ -161,13 +161,24 @@ class HandWidget(QtWidgets.QWidget):
     def __init__(self, parent, image_mgr):
         super().__init__()
         self._parent = parent
+        self.img_height = int(self._parent.rect.height()/5)
         self._image_mgr = image_mgr
+        content = QtWidgets.QWidget(self)
         self.card_layout = QtWidgets.QHBoxLayout()
 
         test_card = QtWidgets.QLabel(self)
-        test_card.pixmap = image_mgr.get_image('card')
+        img = image_mgr.get_image('card')
+        test_card.pixmap = img.scaled(self.img_height,
+                                      self.img_height,
+                                      QtGui.Qt.KeepAspectRatioByExpanding,
+                                      QtGui.Qt.FastTransformation)
         self.card_layout.add_widget(test_card)
-        self.set_layout(self.card_layout)
+        content.set_layout(self.card_layout)
+
+        self.set_widget(content)
+
+        scroll_bar = QtWidgets.QScrollBar(self)
+        self.set_horizontal_scroll_bar(scroll_bar)
 
 
 class ActionsWidget(QtWidgets.QWidget):
