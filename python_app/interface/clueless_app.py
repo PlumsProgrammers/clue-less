@@ -124,6 +124,11 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
             for game in games:
                 if game['id'] == self.game_id:
                     self.status = game['status']
+
+                    for player in game['players']:
+                        if player['username'] == self.player.username:
+                            self.player.hand = player['cards']
+                    break
             return True, f'Game Status: {self.status}'
         return False, 'Could Not Find Game'
 
