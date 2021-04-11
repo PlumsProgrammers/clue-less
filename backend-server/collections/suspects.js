@@ -1,4 +1,4 @@
-const {locations} = require("./locations");
+const { locations } = require("./locations");
 exports.suspects = [
   {
     name: 'Miss Scarlet',
@@ -21,8 +21,8 @@ exports.suspects = [
     startingLocation: locations.find(location => location.name === 'Conservatory-Library-Hallway'),
     color: 'blue'
   }, {
-    name: 'Mrs. White',
+    name: 'Dr. Orchid',
     startingLocation: locations.find(location => location.name === 'Ballroom-Kitchen-Hallway'),
-    color: 'white'
+    color: 'pink'
   }
 ]

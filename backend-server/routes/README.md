@@ -190,7 +190,7 @@ We do plan to provide less information in the future, this is to help with testi
     "players": [
         {
             "username": "TestyMcTester",
-            "suspect": "Mrs. White",
+            "suspect": "Dr. Orchid",
             "location": {
                 "name": "Ballroom-Kitchen-Hallway",
                 "suggestionsAllowed": false,
@@ -250,7 +250,7 @@ We do plan to provide less information in the future, this is to help with testi
             },
             {
                 "username": "TestyMcTester",
-                "suspect": "Mrs. White",
+                "suspect": "Dr. Orchid",
                 "location": {
                     "name": "Ballroom-Kitchen-Hallway",
                     "suggestionsAllowed": false,

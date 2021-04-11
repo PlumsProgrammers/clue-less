@@ -16,7 +16,7 @@ class Suspects(Enum):
                     'colonelmustard': 'Colonel Mustard',
                     'professorplum': 'Professor Plum',
                     'mrspeacock': 'Mrs. Peacock',
-                    'mrswhite': 'Mrs. White'}
+                    'drorchid': 'Dr. Orchid'}
 
         return suspects.get(re.sub(r'[^a-z]+', '', name.lower()), None)
 
@@ -28,7 +28,7 @@ class Suspects(Enum):
                 'Colonel Mustard',
                 'Professor Plum',
                 'Mrs. Peacock',
-                'Mrs. White']
+                'Dr. Orchid']
 
 
 class Rooms(Enum):
