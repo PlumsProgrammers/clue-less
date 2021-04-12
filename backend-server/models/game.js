@@ -130,14 +130,14 @@ const Game = class Game{
       this.status = 'Finished';
       this.winner = guessingPlayer;
       this.broadcast(`${guessingPlayer.username} has won!`);
-      return;
+      return true;
     }
 
     guessingPlayer.failed = true
     if (this.players.some(player => player.failed === false)) {
-      this.turn.nextPlayer()
+      this.turn.endTurn()
       this.broadcast(`${guessingPlayer.username} made a bad accusation and has failed`);
-      return;
+      return false;
     }
 
     this.status = 'Finished'

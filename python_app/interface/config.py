@@ -65,7 +65,7 @@ class Router(Enum):
                        Router.ACCUSATION: {'gameId': game.game_id,
                                            'username': player.username,
                                            'accusation': {'suspect': player.guess[0],
-                                                          'weapon': player.guess[1],
-                                                          'room': player.guess[2]}}
+                                                          'room': player.guess[1],
+                                                          'weapon': player.guess[2]}}
                        }
         return json_params.get(route, None)

@@ -143,7 +143,10 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
                                                             route=Router.ACCUSATION)
                                 )
         if response.status_code == 200:
-            return True, response.json()
+            correct = response.json()
+            if correct:
+                return True, 'Correct, You Win!'
+            return False, 'Sorry, You Lose.'
         if response.status_code == 400:
             if 'turn' in response.content.decode("utf-8"):
                 message = 'Not your turn'
