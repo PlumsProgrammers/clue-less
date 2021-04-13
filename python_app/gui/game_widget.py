@@ -4,6 +4,8 @@ Thanks to:
     https://zetcode.com/gui/pyqt5/dragdrop/
     https://stackoverflow.com/questions/12219727/dragging-moving-a-qpushbutton-in-pyqt
 """
+import re
+
 import numpy as np
 
 from PySide6 import QtWidgets  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
@@ -261,7 +263,7 @@ class BoardWidget(QtWidgets.QFrame):  # pylint: disable=too-many-instance-attrib
         return new_room
 
 
-class HandWidget(QtWidgets.QWidget):
+class HandWidget(QtWidgets.QScrollArea):
     """Widget Showing Images for cards in Player's Hand
 
     Attributes:
@@ -271,13 +273,45 @@ class HandWidget(QtWidgets.QWidget):
     def __init__(self, parent, image_mgr):
         super().__init__()
         self._parent = parent
+        self.img_height = int(self._parent.rect.height()/5)
         self._image_mgr = image_mgr
+        self.content = QtWidgets.QWidget(self)
         self.card_layout = QtWidgets.QHBoxLayout()
 
-        test_card = QtWidgets.QLabel(self)
-        test_card.pixmap = image_mgr.get_image('card')
-        self.card_layout.add_widget(test_card)
-        self.set_layout(self.card_layout)
+        self.default_card = QtWidgets.QLabel(self)
+        img = image_mgr.get_image('Card')
+        self.default_card.pixmap = img.scaled(self.img_height,
+                                              self.img_height,
+                                              QtGui.Qt.KeepAspectRatioByExpanding,
+                                              QtGui.Qt.FastTransformation)
+        self.card_layout.add_widget(self.default_card)
+        self.content.set_layout(self.card_layout)
+
+        self.set_widget(self.content)
+
+        scroll_bar = QtWidgets.QScrollBar(self)
+        self.set_horizontal_scroll_bar(scroll_bar)
+
+    def add_cards(self, hand):
+        """Add given Cards to Hand"""
+        if hand:
+            self.content.parent = None
+            self.content = QtWidgets.QWidget(self)
+            self.card_layout = QtWidgets.QHBoxLayout()
+
+            for card in hand:
+                name = re.sub(r'[^a-zA-Z0-9 ]', '', card['name'])
+                img = self._image_mgr.get_image(name)
+                new_card = QtWidgets.QLabel(self)
+                new_card.pixmap = img.scaled(self.img_height,
+                                             self.img_height,
+                                             QtGui.Qt.KeepAspectRatioByExpanding,
+                                             QtGui.Qt.FastTransformation)
+                self.card_layout.add_widget(new_card)
+
+            self.content.set_layout(self.card_layout)
+            self.set_widget(self.content)
+            self.update()
 
 
 class ActionsWidget(QtWidgets.QWidget):
@@ -292,8 +326,7 @@ class ActionsWidget(QtWidgets.QWidget):
         self._parent = parent
 
         layout = QtWidgets.QHBoxLayout()
-        self.action_log = QtWidgets.QTextEdit('> Action History Here', self)
-        self.action_log.read_only = True
+        self.action_log = LogBox(self)
         layout.add_widget(self.action_log)
 
         button_layout = QtWidgets.QVBoxLayout()
@@ -320,6 +353,33 @@ class ActionsWidget(QtWidgets.QWidget):
                 QtWidgets.QMessageBox.information(self, 'Result', message)
             else:
                 QtWidgets.QMessageBox.warning(self, 'Oops', message)
+
+    def update_log(self, event):
+        """Add message to event log"""
+        event_msg = event.replace('Message:', '').strip()
+        self.action_log.update_text(f'\n> {event_msg}')
+
+
+class LogBox(QtWidgets.QScrollArea):
+    """Creates a scrollable text box for logging actions
+    Source: https://www.geeksforgeeks.org/pyqt5-scrollable-label/
+    """
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.style_sheet = 'background-color: white'
+        self.widget_resizable = True
+        content = QtWidgets.QWidget(self)
+        self.set_widget(content)
+        layout = QtWidgets.QVBoxLayout(content)
+        self.log = QtWidgets.QLabel(content)
+        self.log.alignment = QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop
+        self.log.word_wrap = True
+        layout.add_widget(self.log)
+
+    def update_text(self, text):
+        """Appends action to log box"""
+        self.log.text += text
 
 
 class GameWidget(QtWidgets.QSplitter):
@@ -353,6 +413,14 @@ class GameWidget(QtWidgets.QSplitter):
         lower_layout.add_widget(self.action_widget)
         widget.set_layout(lower_layout)
         self.add_widget(widget)
+
+    def update_log(self, event):
+        """Pass events to Action Log"""
+        self.action_widget.update_log(event)
+
+    def update_cards(self, hand):
+        """Pass hand to Hand Widget"""
+        self.hand_widget.add_cards(hand)
 
 
 class AccusationWidget(QtWidgets.QDialog):

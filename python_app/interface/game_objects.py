@@ -16,7 +16,7 @@ class Suspects(Enum):
                     'colonelmustard': 'Colonel Mustard',
                     'professorplum': 'Professor Plum',
                     'mrspeacock': 'Mrs. Peacock',
-                    'mrswhite': 'Mrs. White'}
+                    'drorchid': 'Dr. Orchid'}
 
         return suspects.get(re.sub(r'[^a-z]+', '', name.lower()), None)
 
@@ -28,7 +28,7 @@ class Suspects(Enum):
                 'Colonel Mustard',
                 'Professor Plum',
                 'Mrs. Peacock',
-                'Mrs. White']
+                'Dr. Orchid']
 
     @staticmethod
     def get_starting_positions():
@@ -130,7 +130,7 @@ class Player:  # pylint: disable=too-few-public-methods # Will need updates
         self.username = None
         self.uuid = None
         self.suspect = None
-        self.cards = []
+        self.hand = []
         self.location = None
         self.turn = None
         self.guess = (None, None, None)

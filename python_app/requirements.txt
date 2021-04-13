@@ -1,3 +1,4 @@
 numpy
 requests
 PySide6
+python-socketio[client]

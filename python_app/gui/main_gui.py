@@ -7,13 +7,15 @@ from gui.chat_widget import ChatWidget
 from gui.game_widget import GameWidget
 from gui.tracker_widget import ClueTrackerWidget
 
+from interface.web_socket import get_socket
+
 from resources.resource_manager import ImageManager
 
 # pylint: disable=wrong-import-order # Import must go last
 from __feature__ import snake_case, true_property  # pylint: disable=unused-import # used for making Qt pythonic
 
 
-class MainWindow(QtWidgets.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):  # pylint: disable=too-many-instance-attributes # All attrs required
     """Main Layout
 
     Attributes:
@@ -29,6 +31,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, game_instance):
         super().__init__()
+
+        self.socket = get_socket()
+        self.socket.setup(gui=self,
+                          game=game_instance,
+                          config=game_instance.config)
+        self.socket.start()
 
         self.game_instance = game_instance
 
@@ -137,6 +145,7 @@ class MainWindow(QtWidgets.QMainWindow):
         result = join_menu.exec_()
         if result == QtWidgets.QDialog.Accepted:
             super().show()
+            self.socket.start_connection()
             return True
         return False
 
@@ -164,7 +173,22 @@ class MainWindow(QtWidgets.QMainWindow):
         if not result:
             QtWidgets.QMessageBox.warning(self, 'Oops', message.title())
 
+        self.game_gui.update_cards(self.game_instance.player.hand)
+
         self.update_game_info_text()
+
+    def socket_event(self, event_type, event):
+        """Handles Event notifications from websocket"""
+        # Add all events to Log
+        self.game_gui.update_log(event)
+
+        if event_type == 'event':
+            # Add actions here based on message content
+            pass
+
+    def socket_message(self, msg_type, message):  # pylint: disable=no-self-use # update when messaging added
+        """Handles Event notifications from websocket"""
+        print(msg_type, message)
 
 
 class JoinMenu(QtWidgets.QDialog):
