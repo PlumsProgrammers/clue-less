@@ -8,7 +8,7 @@ from interface.config import ConfigManager, Router
 from interface.game_objects import Player
 
 
-class Clueless:
+class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs required
     """Runs local Clue-less instance
 
     Attributes:
@@ -18,7 +18,7 @@ class Clueless:
 
     def __init__(self, verbose):
         self._verbose = verbose
-        self._config = ConfigManager()
+        self.config = ConfigManager()
 
         self.game_name = None
         self.game_id = None
@@ -32,7 +32,7 @@ class Clueless:
         if self._verbose:
             print('Testing Connection...')
         try:
-            test_path = os.path.join(self._config.get_host(),
+            test_path = os.path.join(self.config.get_host(),
                                      Router.get_path(Router.TEST_CONNECTION))
             test_page = requests.get(test_path)
             try:
@@ -52,13 +52,15 @@ class Clueless:
         self.game_name = game_name
         self.password = password
 
-        create_game_path = os.path.join(self._config.get_host(),
+        create_game_path = os.path.join(self.config.get_host(),
                                         Router.get_path(Router.CREATE_GAME))
+        json = Router.get_json_params(game=self,
+                                      player=self.player,
+                                      route=Router.CREATE_GAME)
+        if not self.password:
+            json.pop('password', None)
         response = requests.post(create_game_path,
-                                 json=Router.get_json_params(game=self,
-                                                             player=self.player,
-                                                             route=Router.CREATE_GAME)
-                                 )
+                                 json=json)
         if response.status_code == 201:
             self.game_id = int(response.json()["id"])
             return True, None
@@ -72,13 +74,16 @@ class Clueless:
         self.password = password
         self.game_id = game_id
 
-        join_game_path = os.path.join(self._config.get_host(),
+        join_game_path = os.path.join(self.config.get_host(),
                                       Router.get_path(Router.JOIN_GAME))
+        json = Router.get_json_params(game=self,
+                                      player=self.player,
+                                      route=Router.JOIN_GAME)
+        if not self.password:
+            json.pop('password', None)
         response = requests.post(join_game_path,
-                                 json=Router.get_json_params(game=self,
-                                                             player=self.player,
-                                                             route=Router.JOIN_GAME)
-                                 )
+                                 json=json)
+
         if response.status_code == 200:
             self.status = response.json()['status']
             players = response.json()['players']
@@ -95,7 +100,7 @@ class Clueless:
 
     def start_game(self):
         """Starts connected game if enough players are present"""
-        start_game_path = os.path.join(self._config.get_host(),
+        start_game_path = os.path.join(self.config.get_host(),
                                        Router.get_path(Router.START_GAME))
         response = requests.put(start_game_path,
                                 json=Router.get_json_params(game=self,
@@ -111,7 +116,7 @@ class Clueless:
 
     def check_game_status(self):
         """Checks game status to see if game has started"""
-        check_game_path = os.path.join(self._config.get_host(),
+        check_game_path = os.path.join(self.config.get_host(),
                                        Router.get_path(Router.CHECK_GAME_STATUS))
         response = requests.get(check_game_path)
         if response.status_code == 200:
@@ -125,7 +130,7 @@ class Clueless:
     def make_accusation(self, person, place, thing):
         """Make Accusation"""
         self.player.guess = (person, place, thing)
-        accusation_path = os.path.join(self._config.get_host(),
+        accusation_path = os.path.join(self.config.get_host(),
                                        Router.get_path(Router.ACCUSATION))
         response = requests.put(accusation_path,
                                 json=Router.get_json_params(game=self,
@@ -144,6 +149,6 @@ class Clueless:
 
     def about(self):
         """Return information from Clue-less About page"""
-        about_page = os.path.join(self._config.get_host(),
+        about_page = os.path.join(self.config.get_host(),
                                   Router.get_path(Router.ABOUT))
         return requests.get(about_page).json()
