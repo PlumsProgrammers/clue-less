@@ -6,9 +6,11 @@ Thanks to:
 """
 import re
 
-from PySide6 import QtCore  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
-from PySide6 import QtGui  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
+import numpy as np
+
 from PySide6 import QtWidgets  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
+from PySide6 import QtGui  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
+from PySide6 import QtCore  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
 
 from interface.game_objects import Rooms, Suspects, Weapons
 
@@ -17,39 +19,21 @@ from __feature__ import snake_case, true_property  # pylint: disable=unused-impo
 
 
 class GamePiece(QtWidgets.QLabel):
-    """Moveable Game Piece
+    """ Regular Game Piece
 
     Attributes:
-        parent (BoardWidget): Board Widget containing this piece
-        image (QPixMap): Image used for Game Board
-        ratio (float): image Width/Height
+        parent(BoardWidget): Board Widget containing this piece
+        image(QPixMap): Image used for Game Board
+        ratio(float): image Width/Height
     """
 
-    def __init__(self, parent, image_mgr):
+    def __init__(self, parent, image_mgr, suspect):
         super().__init__(parent)
         self.parent = parent
-        self.image = image_mgr.get_image('piece')
+        self.suspect = suspect
+        self.image = image_mgr.get_image('piece')  # change to suspect
         self.ratio = self.image.size().width() / self.image.size().height()
         self.resize(self.image.size())
-        self._mouse_press_pos = None
-        self._mouse_move_pos = None
-
-    def mouse_press_event(self, event):
-        """Sets Click or Move based on mouse button"""
-        if event.button() == QtCore.Qt.LeftButton:
-            self._mouse_press_pos = event.global_pos()
-            self._mouse_move_pos = event.global_pos()
-
-    def mouse_move_event(self, event):
-        """Updates button position when mouse moves"""
-        if event.buttons() == QtCore.Qt.LeftButton:
-            # adjust offset from clicked point to origin of widget
-            curr_pos = self.map_to_global(self.pos)
-            global_pos = event.global_pos()
-            diff = global_pos - self._mouse_move_pos
-            new_pos = self.map_from_global(curr_pos + diff)
-            self.move(new_pos)
-            self._mouse_move_pos = global_pos
 
     def paint_event(self, event):
         """Repaint Board so it is Max size and Centered"""
@@ -73,15 +57,85 @@ class GamePiece(QtWidgets.QLabel):
                                 height)
             painter.draw_pixmap(rect, self.image)
             self.raise_()
+        self.parent.update_room_positions()
 
 
-class BoardImage(QtWidgets.QWidget):
+class PlayerPiece(GamePiece):
+    """Moveable Game Piece
+
+    Attributes:
+        parent(BoardWidget): Board Widget containing this piece
+        image(QPixMap): Image used for Game Board
+        ratio(float): image Width/Height
+    """
+
+    def __init__(self, parent, image_mgr, suspect_img):
+        super().__init__(parent, image_mgr, suspect_img)
+        self._mouse_press_pos = None
+        self._mouse_move_pos = None
+        self._moving = False
+
+    def mouse_press_event(self, event):
+        """Sets Click or Move based on mouse button"""
+        if event.button() == QtGui.Qt.LeftButton:
+            self._mouse_press_pos = event.global_pos()
+            self._mouse_move_pos = event.global_pos()
+            self._moving = True
+
+    def mouse_move_event(self, event):
+        """Updates button position when mouse moves"""
+        if event.buttons() == QtGui.Qt.LeftButton:
+            # adjust offset from clicked point to origin of widget
+            curr_pos = self.map_to_global(self.pos)
+            global_pos = event.global_pos()
+            diff = global_pos - self._mouse_move_pos
+            new_pos = self.map_from_global(curr_pos + diff)
+            self.move(new_pos)
+            self._mouse_move_pos = global_pos
+
+    def mouse_release_event(self, event):
+        """Overrides Qt Mouse Release to trigger Moving Suspect"""
+        super().mouse_release_event(event)
+        if self._moving:
+            old_room = self.parent.suspect_positions[self.suspect]
+            new_room = self.parent.find_closest_room(self._mouse_move_pos)
+            print(old_room, new_room)
+            self.parent.move_suspect(self.suspect, new_room)
+            if old_room != new_room:
+                move_alert = QtWidgets.QMessageBox()
+                move_alert.icon = QtWidgets.QMessageBox.Information
+                move_alert.text = f'Move to {new_room}?'
+                move_alert.standard_buttons = QtWidgets.QMessageBox.Ok |\
+                    QtWidgets.QMessageBox.Cancel
+                response = move_alert.exec_()
+                result = True
+                if response == QtWidgets.QMessageBox.Ok:
+                    result, message = self.parent.game_instance.move_player(
+                        new_room)
+                    if result:
+                        print(message)
+                        QtWidgets.QMessageBox.information(self.parent,
+                                                          'Success',
+                                                          message)
+                    else:
+                        print('oops')
+                        QtWidgets.QMessageBox.warning(self.parent,
+                                                      'Oops',
+                                                      message)
+                        self.parent.move_suspect(self.suspect, old_room)
+                if response == QtWidgets.QMessageBox.Cancel:
+                    self.parent.move_suspect(self.suspect, old_room)
+
+            self._moving = False
+
+
+class BoardImage(QtWidgets.QLabel):
     """Widget containing scalable game board
 
     Attributes:
-        image (QPixMap): Image used for Game Board
-        ratio (float): image Width/Height
-        img_width (int): Current board image width
+        image(QPixMap): Image used for Game Board
+        ratio(float): image Width/Height
+        img_width(int): Current board image width
     """
 
     def __init__(self, image_mgr):
@@ -89,11 +143,12 @@ class BoardImage(QtWidgets.QWidget):
         self.image = image_mgr.get_image('game_board')
         self.ratio = self.image.width() / self.image.height()
         self.img_width = self.image.width()
+        self.draw_area = None
 
     def paint_event(self, event):
         """Repaint Board so it is Max size and Centered
 
-        Source: https://stackoverflow.com/questions/44505229/
+        Source: https: // stackoverflow.com/questions/44505229/
                 pyqt-automatically-resizing-widget-picture
         """
         super().paint_event(event)
@@ -104,60 +159,115 @@ class BoardImage(QtWidgets.QWidget):
         if self.rect.height() < self.rect.width():
             self.img_width = self.ratio * self.rect.height()
             rect = QtCore.QRect((self.rect.width() - self.img_width)/2,
-                                self.rect.y(),
+                                0,
                                 self.img_width,
                                 self.rect.height())
+            self.draw_area = rect
             painter.draw_pixmap(rect, self.image)
         else:
             self.img_width = self.rect.width()
             rect = QtCore.QRect((self.rect.width() - self.img_width)/2,
-                                self.rect.y(),
+                                0,
                                 self.img_width,
                                 self.rect.width() / self.ratio)
+            self.draw_area = rect
             painter.draw_pixmap(rect, self.image)
 
 
-class BoardWidget(QtWidgets.QFrame):
+class BoardWidget(QtWidgets.QFrame):  # pylint: disable=too-many-instance-attributes # Counting QFrame attrs
     """Widget Showing Game Board and Game Pieces
 
     Attributes:
-        game_board (BoardImage): Resizable Game Board widget
-        game_piece (GamePiece): Movable Game Piece widget
+        game_board(BoardImage): Resizable Game Board widget
+        game_piece(GamePiece): Movable Game Piece widget
     """
 
     def __init__(self, parent, image_mgr):
         super().__init__()
-        self._parent = parent
+        parent.splitterMoved.connect(self.resize)
         self.frame_shape = QtWidgets.QFrame.StyledPanel
-        self._parent.splitterMoved.connect(self.resize)
+        self.accept_drops = True
+
+        self.game_instance = parent.game_instance
         self._image_mgr = image_mgr
+        self.suspect_positions = Suspects.get_starting_positions()
+        self.room_locations = {}
+        self.rel_pos = Rooms.get_relative_positions()
+        self.game_pieces = {}
 
         layout = QtWidgets.QVBoxLayout()
-        self.accept_drops = True
 
         self.game_board = BoardImage(image_mgr)
         layout.add_widget(self.game_board)
 
-        self.game_piece = GamePiece(self, image_mgr)
-        # Pylint cannot find width() and height() functions
-        # pylint: disable=no-member
-        self.game_piece.move(self.rect.x(), self.rect.y())
-
         self.set_layout(layout)
+        self.update_room_positions()
 
     def resize(self):
         """Resize object to fit Image"""
         self.game_board.repaint()
-        if self.game_piece.is_hidden():
-            self.game_piece.show()
-        self.game_piece.repaint()
+        for suspect, piece in self.game_pieces.items():
+            if piece.is_hidden():
+                piece.show()
+            piece.repaint()
+            self.move_suspect(suspect, self.suspect_positions[suspect])
+
+    def update_room_positions(self):
+        """Sets position of each room on screen"""
+        if self.game_board.draw_area:
+            x_0, y_0, width, height = self.game_board.draw_area.get_rect()
+            self.room_locations = {room: (x_0 + width*pos[0],
+                                          y_0 + height*pos[1])
+                                   for room, pos in self.rel_pos.items()}
+
+    def set_player(self, suspect):
+        """Creates movable piece based on player suspect"""
+        if suspect:
+            game_piece = PlayerPiece(self, self._image_mgr, suspect)
+            old = self.game_pieces.pop(suspect, None)
+            if old:
+                old.hide()
+            self.game_pieces[suspect] = game_piece
+            self.move_suspect(suspect,
+                              self.suspect_positions.get(suspect, 'None'))
+            self.resize()
+
+    def move_suspect(self, suspect, room):
+        """Move given suspect to specified room"""
+        self.update_room_positions()
+        if suspect in self.suspect_positions.keys():
+            self.suspect_positions[suspect] = room
+            x_0, y_0 = self.room_locations.get(room, (0, 0))
+            piece = self.game_pieces.get(suspect, None)
+            if piece:
+                piece.move(x_0, y_0)
+
+    def find_closest_room(self, position):
+        """Finds closest room to given screen position"""
+        position = self.map_from_global(position)
+        self.update_room_positions()
+        new_room = None
+        min_dist = -1
+        x_pos = position.x()
+        y_pos = position.y()
+        # O(n^2) solution, but too fast to need optimizations
+        for room, loc in self.room_locations.items():
+            dist = np.sqrt(
+                np.square(x_pos - loc[0]) + np.square(y_pos - loc[1]))
+            if min_dist < 0:
+                min_dist = dist
+                new_room = room
+            elif dist < min_dist:
+                min_dist = dist
+                new_room = room
+        return new_room
 
 
 class HandWidget(QtWidgets.QScrollArea):
     """Widget Showing Images for cards in Player's Hand
 
     Attributes:
-        card_layout (QtWidgets.QHBoxLayout): Horizontal Layout where Cards are shown
+        card_layout(QtWidgets.QHBoxLayout): Horizontal Layout where Cards are shown
     """
 
     def __init__(self, parent, image_mgr):
@@ -208,7 +318,7 @@ class ActionsWidget(QtWidgets.QWidget):
     """Widget showing Action History and Suggestion/Accusation button
 
     Attributes:
-        action_log (QtWidgets.QTextEdit): Text box for showing action history
+        action_log(QtWidgets.QTextEdit): Text box for showing action history
     """
 
     def __init__(self, parent):
@@ -276,21 +386,19 @@ class GameWidget(QtWidgets.QSplitter):
     """Central Game Layout
 
     Attributes:
-        game_instance (clueless_app.Clueless): Main Game instance
-        game_board (BoardWidget): Resizable Game Board widget
-        hand_widget (HandWidget): Widget containing player cards
-        action_widtet (ActionsWidget): Widget containing action
+        game_instance(clueless_app.Clueless): Main Game instance
+        game_board(BoardWidget): Resizable Game Board widget
+        hand_widget(HandWidget): Widget containing player cards
+        action_widtet(ActionsWidget): Widget containing action
             history and accusation/suggestion buttons
     """
 
     def __init__(self, parent, game_instance, image_mgr):
         super().__init__(QtCore.Qt.Vertical)
         self.game_instance = game_instance
+        self.player = game_instance.player
         self._image_mgr = image_mgr
         self._parent = parent
-
-        self.game_board = None
-        self.hand_widget = None
 
         self.game_board = BoardWidget(self, self._image_mgr)
         self.add_widget(self.game_board)
@@ -319,12 +427,12 @@ class AccusationWidget(QtWidgets.QDialog):
     """Create a form for making Accusations
 
     Attributes:
-        person (str): Suspect Selected for Accusation
-        place (str): Room Selected for Accusation
-        thing (str): Weapon Selected for Accusation
-        suspect_selector (QtWidgets.QComboBox): Dropdown for selecting suspects
-        room_selector (QtWidgets.QComboBox): Dropdown for selecting rooms
-        weapon_selector (QtWidgets.QComboBox): Dropdown for selecting weapons
+        person(str): Suspect Selected for Accusation
+        place(str): Room Selected for Accusation
+        thing(str): Weapon Selected for Accusation
+        suspect_selector(QtWidgets.QComboBox): Dropdown for selecting suspects
+        room_selector(QtWidgets.QComboBox): Dropdown for selecting rooms
+        weapon_selector(QtWidgets.QComboBox): Dropdown for selecting weapons
     """
 
     def __init__(self, parent):
