@@ -4,6 +4,8 @@ Thanks to:
     https://zetcode.com/gui/pyqt5/dragdrop/
     https://stackoverflow.com/questions/12219727/dragging-moving-a-qpushbutton-in-pyqt
 """
+import re
+
 from PySide6 import QtCore  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
 from PySide6 import QtGui  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
 from PySide6 import QtWidgets  # pylint: disable=no-name-in-module # GitHub Actions cant import Qt modules
@@ -151,7 +153,7 @@ class BoardWidget(QtWidgets.QFrame):
         self.game_piece.repaint()
 
 
-class HandWidget(QtWidgets.QWidget):
+class HandWidget(QtWidgets.QScrollArea):
     """Widget Showing Images for cards in Player's Hand
 
     Attributes:
@@ -161,13 +163,45 @@ class HandWidget(QtWidgets.QWidget):
     def __init__(self, parent, image_mgr):
         super().__init__()
         self._parent = parent
+        self.img_height = int(self._parent.rect.height()/5)
         self._image_mgr = image_mgr
+        self.content = QtWidgets.QWidget(self)
         self.card_layout = QtWidgets.QHBoxLayout()
 
-        test_card = QtWidgets.QLabel(self)
-        test_card.pixmap = image_mgr.get_image('card')
-        self.card_layout.add_widget(test_card)
-        self.set_layout(self.card_layout)
+        self.default_card = QtWidgets.QLabel(self)
+        img = image_mgr.get_image('Card')
+        self.default_card.pixmap = img.scaled(self.img_height,
+                                              self.img_height,
+                                              QtGui.Qt.KeepAspectRatioByExpanding,
+                                              QtGui.Qt.FastTransformation)
+        self.card_layout.add_widget(self.default_card)
+        self.content.set_layout(self.card_layout)
+
+        self.set_widget(self.content)
+
+        scroll_bar = QtWidgets.QScrollBar(self)
+        self.set_horizontal_scroll_bar(scroll_bar)
+
+    def add_cards(self, hand):
+        """Add given Cards to Hand"""
+        if hand:
+            self.content.parent = None
+            self.content = QtWidgets.QWidget(self)
+            self.card_layout = QtWidgets.QHBoxLayout()
+
+            for card in hand:
+                name = re.sub(r'[^a-zA-Z0-9 ]', '', card['name'])
+                img = self._image_mgr.get_image(name)
+                new_card = QtWidgets.QLabel(self)
+                new_card.pixmap = img.scaled(self.img_height,
+                                             self.img_height,
+                                             QtGui.Qt.KeepAspectRatioByExpanding,
+                                             QtGui.Qt.FastTransformation)
+                self.card_layout.add_widget(new_card)
+
+            self.content.set_layout(self.card_layout)
+            self.set_widget(self.content)
+            self.update()
 
 
 class ActionsWidget(QtWidgets.QWidget):
@@ -275,6 +309,10 @@ class GameWidget(QtWidgets.QSplitter):
     def update_log(self, event):
         """Pass events to Action Log"""
         self.action_widget.update_log(event)
+
+    def update_cards(self, hand):
+        """Pass hand to Hand Widget"""
+        self.hand_widget.add_cards(hand)
 
 
 class AccusationWidget(QtWidgets.QDialog):

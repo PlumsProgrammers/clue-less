@@ -166,6 +166,8 @@ class MainWindow(QtWidgets.QMainWindow):  # pylint: disable=too-many-instance-at
         if not result:
             QtWidgets.QMessageBox.warning(self, 'Oops', message.title())
 
+        self.game_gui.update_cards(self.game_instance.player.hand)
+
         self.update_game_info_text()
 
     def socket_event(self, event_type, event):
