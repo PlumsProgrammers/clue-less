@@ -39,7 +39,7 @@ def main():
         gui.window_title = 'Clue-less'
         gui.geometry = QtCore.QRect(0, 0,
                                     app.primary_screen.size.width(),
-                                    app.primary_screen.size.width())
+                                    app.primary_screen.size.height())
         if gui.show():
             app.exec_()
             gui.socket.end_connection()

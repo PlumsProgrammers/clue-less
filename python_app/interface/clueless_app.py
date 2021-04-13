@@ -142,7 +142,7 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
     def move_player(self, room):
         """Move Player to selected Room"""
         self.player.location = room
-        move_path = os.path.join(self._config.get_host(),
+        move_path = os.path.join(self.config.get_host(),
                                  Router.get_path(Router.MOVE))
         response = requests.put(move_path,
                                 json=Router.get_json_params(game=self,
