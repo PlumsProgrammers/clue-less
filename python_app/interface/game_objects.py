@@ -38,7 +38,7 @@ class Suspects(Enum):
                 'Colonel Mustard': 'Dining Room-Lounge-Hallway',
                 'Professor Plum': 'Library-Study-Hallway',
                 'Mrs. Peacock': 'Conservatory-Library-Hallway',
-                'Mrs. White': 'Ballroom-Kitchen-Hallway'}
+                'Dr. Orchid': 'Ballroom-Kitchen-Hallway'}
 
 
 class Rooms(Enum):
