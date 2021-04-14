@@ -154,6 +154,29 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
             return False, response.json()
         return False, 'Unknown Error'
 
+    def make_suggestion(self, person, place, thing):
+        """Make Suggestion"""
+        self.player.suggest = (person, place, thing)
+        suggestion_path = os.path.join(self.config.get_host(),
+                                       Router.get_path(Router.SUGGESTION))
+        response = requests.put(suggestion_path,
+                                json=Router.get_json_params(game=self,
+                                                            player=self.player,
+                                                            route=Router.SUGGESTION)
+                                )
+        if response.status_code == 200:
+            correct = response.json()
+            if correct:
+                return True, 'Correct, You Win!'
+            return False, 'Sorry, You Lose.'
+        if response.status_code == 400:
+            if 'turn' in response.content.decode("utf-8"):
+                message = 'Not your turn'
+            else:
+                message = response.json()
+            return False, message
+        return False, 'Unknown Error'
+
     def make_accusation(self, person, place, thing):
         """Make Accusation"""
         self.player.guess = (person, place, thing)
