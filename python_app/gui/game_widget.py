@@ -331,11 +331,19 @@ class ActionsWidget(QtWidgets.QWidget):
 
         button_layout = QtWidgets.QVBoxLayout()
         suggestion_button = QtWidgets.QPushButton('Make Suggestion')
+        self.connect(suggestion_button,
+                     QtCore.SIGNAL('clicked()'),
+                     self.make_suggestion)
+        response_button = QtWidgets.QPushButton('Respond to Suggestion')
+        self.connect(response_button,
+                     QtCore.SIGNAL('clicked()'),
+                     self.suggestion_response)
         accusation_button = QtWidgets.QPushButton('Make Accusation')
         self.connect(accusation_button,
                      QtCore.SIGNAL('clicked()'),
                      self.make_accusation)
         button_layout.add_widget(suggestion_button)
+        button_layout.add_widget(response_button)
         button_layout.add_widget(accusation_button)
 
         layout.add_layout(button_layout)
@@ -349,6 +357,34 @@ class ActionsWidget(QtWidgets.QWidget):
             result, message = self._parent.game_instance.make_accusation(accusation.person,
                                                                          accusation.place,
                                                                          accusation.thing)
+            if result:
+                QtWidgets.QMessageBox.information(self, 'Result', message)
+            else:
+                QtWidgets.QMessageBox.warning(self, 'Oops', message)
+
+    def make_suggestion(self):
+        """Create Form to Select Suggestion, then submit"""
+        room = self._parent.game_instance.player.location
+        suggestion = SuggestionWidget(self, room)
+        status = suggestion.exec_()
+        if status == QtWidgets.QDialog.Accepted:
+            result, message = self._parent.game_instance.make_suggestion(suggestion.person,
+                                                                         suggestion.place,
+                                                                         suggestion.thing)
+            if result:
+                QtWidgets.QMessageBox.information(self, 'Result', message)
+            else:
+                QtWidgets.QMessageBox.warning(self, 'Oops', message)
+
+    def suggestion_response(self):
+        """Create Form to Select Suggestion Response, then submit"""
+        cards = []
+        for card in self._parent.game_instance.player.hand:
+            cards.append(card['name'])
+        response = ResponseWidget(self, cards)
+        status = response.exec_()
+        if status == QtWidgets.QDialog.Accepted:
+            result, message = self._parent.game_instance.suggestion_response(response.card)
             if result:
                 QtWidgets.QMessageBox.information(self, 'Result', message)
             else:
@@ -485,3 +521,100 @@ class AccusationWidget(QtWidgets.QDialog):
                                           'Please Select a Weapon')
         else:
             super().accept()
+
+
+class SuggestionWidget(QtWidgets.QDialog):
+    """Create a form for making Accusations
+
+    Attributes:
+        aaaaaaaaaaaaaaaaaaaaaaaaa
+    """
+
+    def __init__(self, parent, room):
+        super().__init__(parent)
+        self._parent = parent
+        self.person = None
+        self.place = None
+        self.thing = None
+
+        form = QtWidgets.QFormLayout()
+        self.suspect_selector = QtWidgets.QComboBox(self)
+        self.suspect_selector.add_items(['None'] + Suspects.get_suspect_list())
+        form.add_row(QtWidgets.QLabel('Suspect'), self.suspect_selector)
+        self.room = room
+        form.add_row(QtWidgets.QLabel('Room'), QtWidgets.QLabel(self.room))
+        self.weapon_selector = QtWidgets.QComboBox(self)
+        self.weapon_selector.add_items(['None'] + Weapons.get_weapon_list())
+        form.add_row(QtWidgets.QLabel('Weapon'), self.weapon_selector)
+
+        accept_button = QtWidgets.QPushButton('Suggest', self)
+        self.connect(accept_button,
+                     QtCore.SIGNAL('clicked()'),
+                     self.accept)
+
+        cancel_button = QtWidgets.QPushButton('Cancel', self)
+        self.connect(cancel_button,
+                     QtCore.SIGNAL('clicked()'),
+                     self.reject)
+        form.add_row(accept_button, cancel_button)
+        self.set_layout(form)
+
+    def accept(self):
+        """Override of QDialog accept method, verifies user selections"""
+        self.person = self.suspect_selector.current_text
+        self.place = self.room
+        self.thing = self.weapon_selector.current_text
+
+        if self.person == 'None':
+            QtWidgets.QMessageBox.warning(self,
+                                          'Oops',
+                                          'Please Select a Suspect')
+        elif self.place == 'None':
+            QtWidgets.QMessageBox.warning(self,
+                                          'Oops',
+                                          'Please Select a Room')
+        elif self.thing == 'None':
+            QtWidgets.QMessageBox.warning(self,
+                                          'Oops',
+                                          'Please Select a Weapon')
+        else:
+            super().accept()
+
+
+
+class ResponseWidget(QtWidgets.QDialog):
+    """Create a form for making Accusations
+
+    Attributes:
+        aaaaaaaaaaaaaaaaaa
+    """
+
+    def __init__(self, parent, cards):
+        super().__init__(parent)
+        self._parent = parent
+        self.card = None
+
+        form = QtWidgets.QFormLayout()
+        self.card_selector = QtWidgets.QComboBox(self)
+        cards = cards
+        self.card_selector.add_items(['None'] + cards)
+        form.add_row(QtWidgets.QLabel('Card'), self.card_selector)
+
+        accept_button = QtWidgets.QPushButton('Respond', self)
+        self.connect(accept_button,
+                     QtCore.SIGNAL('clicked()'),
+                     self.accept)
+
+        cancel_button = QtWidgets.QPushButton('Cancel', self)
+        self.connect(cancel_button,
+                     QtCore.SIGNAL('clicked()'),
+                     self.reject)
+        form.add_row(accept_button, cancel_button)
+        self.set_layout(form)
+
+    def accept(self):
+        """Override of QDialog accept method, verifies user selections"""
+        self.card = self.card_selector.current_text
+        if self.card == 'None':
+            self.card = None
+        super().accept()

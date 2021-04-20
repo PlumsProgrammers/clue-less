@@ -120,11 +120,16 @@ class MainWindow(QtWidgets.QMainWindow):  # pylint: disable=too-many-instance-at
         self.connect(start_action,
                      QtCore.SIGNAL('triggered()'),
                      self.start_game)
-        start_action = game_menu.add_action('Check Game Status')
-        start_action.shortcut = 'Ctrl+r'
-        self.connect(start_action,
+        check_action = game_menu.add_action('Check Game Status')
+        check_action.shortcut = 'Ctrl+r'
+        self.connect(check_action,
                      QtCore.SIGNAL('triggered()'),
                      self.check_game_status)
+        end_action = game_menu.add_action('End Turn')
+        end_action.shortcut = 'Ctrl+e'
+        self.connect(end_action,
+                     QtCore.SIGNAL('triggered()'),
+                     self.end_turn)
 
         help_menu = menu_bar.add_menu('&Help')
         help_menu.add_action('&Rules')
@@ -176,6 +181,13 @@ class MainWindow(QtWidgets.QMainWindow):  # pylint: disable=too-many-instance-at
         self.game_gui.update_cards(self.game_instance.player.hand)
 
         self.update_game_info_text()
+    
+    def end_turn(self):
+        result, message = self.game_instance.end_turn()
+        # if result:
+        #     QtWidgets.QMessageBox.information(self, 'Success', message.title())
+        # if not result:
+        #     QtWidgets.QMessageBox.warning(self, 'Oops', message.title())
 
     def socket_event(self, event_type, event):
         """Handles Event notifications from websocket"""

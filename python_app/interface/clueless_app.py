@@ -200,6 +200,20 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
             return False, message
         return False, 'Unknown Error'
 
+    def end_turn(self):
+        end_turn_path = os.path.join(self.config.get_host(),
+                                       Router.get_path(Router.ENDTURN))
+        response = requests.put(end_turn_path,
+                                json=Router.get_json_params(game=self,
+                                                            player=self.player,
+                                                            route=Router.ENDTURN)
+                                )
+        if response.status_code == 200:
+            message = response.json()
+        if response.status_code == 400:
+            message = response.json()
+        return False, 'Unknown Error'
+
     def about(self):
         """Return information from Clue-less About page"""
         about_page = os.path.join(self.config.get_host(),
