@@ -155,8 +155,8 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
         return False, 'Unknown Error'
 
     def make_suggestion(self, person, place, thing):
-        """Make Suggestion"""
-        self.player.suggest = (person, place, thing)
+        """Make Accusation"""
+        self.player.guess = (person, place, thing)
         suggestion_path = os.path.join(self.config.get_host(),
                                        Router.get_path(Router.SUGGESTION))
         response = requests.put(suggestion_path,
@@ -165,16 +165,26 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
                                                             route=Router.SUGGESTION)
                                 )
         if response.status_code == 200:
-            correct = response.json()
-            if correct:
-                return True, 'Correct, You Win!'
-            return False, 'Sorry, You Lose.'
+            return True, response.json()
         if response.status_code == 400:
-            if 'turn' in response.content.decode("utf-8"):
-                message = 'Not your turn'
-            else:
-                message = response.json()
-            return False, message
+            return False, response.json()
+        return False, 'Unknown Error'
+
+    def suggestion_response(self, card=None):
+        """Make Accusation"""
+        reponse_path = os.path.join(self.config.get_host(),
+                                       Router.get_path(Router.RESPONSE))
+        json = Router.get_json_params(game=self,
+                                      player=self.player,
+                                      route=Router.RESPONSE)
+        if card:
+            json['card'] = card
+        response = requests.put(reponse_path,
+                                json=json)
+        if response.status_code == 200:
+            return True, response.json()
+        if response.status_code == 400:
+            return False, response.json()
         return False, 'Unknown Error'
 
     def make_accusation(self, person, place, thing):
@@ -201,6 +211,7 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
         return False, 'Unknown Error'
 
     def end_turn(self):
+        """Notify Sever that turn is complete"""
         end_turn_path = os.path.join(self.config.get_host(),
                                        Router.get_path(Router.ENDTURN))
         response = requests.put(end_turn_path,
@@ -209,9 +220,9 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
                                                             route=Router.ENDTURN)
                                 )
         if response.status_code == 200:
-            message = response.json()
+            return True,  response.json()
         if response.status_code == 400:
-            message = response.json()
+            return False, response.json()
         return False, 'Unknown Error'
 
     def about(self):

@@ -184,10 +184,10 @@ class MainWindow(QtWidgets.QMainWindow):  # pylint: disable=too-many-instance-at
     
     def end_turn(self):
         result, message = self.game_instance.end_turn()
-        # if result:
-        #     QtWidgets.QMessageBox.information(self, 'Success', message.title())
-        # if not result:
-        #     QtWidgets.QMessageBox.warning(self, 'Oops', message.title())
+        if result:
+            QtWidgets.QMessageBox.information(self, 'Success', message.title())
+        if not result:
+            QtWidgets.QMessageBox.warning(self, 'Oops', message.title())
 
     def socket_event(self, event_type, event):
         """Handles Event notifications from websocket"""
