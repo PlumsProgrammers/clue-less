@@ -181,8 +181,9 @@ class MainWindow(QtWidgets.QMainWindow):  # pylint: disable=too-many-instance-at
         self.game_gui.update_cards(self.game_instance.player.hand)
 
         self.update_game_info_text()
-    
+
     def end_turn(self):
+        """Notifies server that turn is complete"""
         result, message = self.game_instance.end_turn()
         if result:
             QtWidgets.QMessageBox.information(self, 'Success', message.title())

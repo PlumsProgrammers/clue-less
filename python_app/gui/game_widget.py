@@ -22,9 +22,9 @@ class GamePiece(QtWidgets.QLabel):
     """ Regular Game Piece
 
     Attributes:
-        parent(BoardWidget): Board Widget containing this piece
-        image(QPixMap): Image used for Game Board
-        ratio(float): image Width/Height
+        parent (BoardWidget): Board Widget containing this piece
+        image (QPixMap): Image used for Game Board
+        ratio (float): image Width/Height
     """
 
     def __init__(self, parent, image_mgr, suspect):
@@ -64,9 +64,9 @@ class PlayerPiece(GamePiece):
     """Moveable Game Piece
 
     Attributes:
-        parent(BoardWidget): Board Widget containing this piece
-        image(QPixMap): Image used for Game Board
-        ratio(float): image Width/Height
+        parent (BoardWidget): Board Widget containing this piece
+        image (QPixMap): Image used for Game Board
+        ratio (float): image Width/Height
     """
 
     def __init__(self, parent, image_mgr, suspect_img):
@@ -133,9 +133,9 @@ class BoardImage(QtWidgets.QLabel):
     """Widget containing scalable game board
 
     Attributes:
-        image(QPixMap): Image used for Game Board
-        ratio(float): image Width/Height
-        img_width(int): Current board image width
+        image (QPixMap): Image used for Game Board
+        ratio (float): image Width/Height
+        img_width (int): Current board image width
     """
 
     def __init__(self, image_mgr):
@@ -178,8 +178,8 @@ class BoardWidget(QtWidgets.QFrame):  # pylint: disable=too-many-instance-attrib
     """Widget Showing Game Board and Game Pieces
 
     Attributes:
-        game_board(BoardImage): Resizable Game Board widget
-        game_piece(GamePiece): Movable Game Piece widget
+        game_board (BoardImage): Resizable Game Board widget
+        game_piece (GamePiece): Movable Game Piece widget
     """
 
     def __init__(self, parent, image_mgr):
@@ -318,7 +318,7 @@ class ActionsWidget(QtWidgets.QWidget):
     """Widget showing Action History and Suggestion/Accusation button
 
     Attributes:
-        action_log(QtWidgets.QTextEdit): Text box for showing action history
+        action_log (QtWidgets.QTextEdit): Text box for showing action history
     """
 
     def __init__(self, parent):
@@ -384,7 +384,8 @@ class ActionsWidget(QtWidgets.QWidget):
         response = ResponseWidget(self, cards)
         status = response.exec_()
         if status == QtWidgets.QDialog.Accepted:
-            result, message = self._parent.game_instance.suggestion_response(response.card)
+            result, message = self._parent.game_instance.suggestion_response(
+                response.card)
             if result:
                 QtWidgets.QMessageBox.information(self, 'Result', message)
             else:
@@ -422,10 +423,10 @@ class GameWidget(QtWidgets.QSplitter):
     """Central Game Layout
 
     Attributes:
-        game_instance(clueless_app.Clueless): Main Game instance
-        game_board(BoardWidget): Resizable Game Board widget
-        hand_widget(HandWidget): Widget containing player cards
-        action_widtet(ActionsWidget): Widget containing action
+        game_instance (clueless_app.Clueless): Main Game instance
+        game_board (BoardWidget): Resizable Game Board widget
+        hand_widget (HandWidget): Widget containing player cards
+        action_widtet (ActionsWidget): Widget containing action
             history and accusation/suggestion buttons
     """
 
@@ -463,12 +464,12 @@ class AccusationWidget(QtWidgets.QDialog):
     """Create a form for making Accusations
 
     Attributes:
-        person(str): Suspect Selected for Accusation
-        place(str): Room Selected for Accusation
-        thing(str): Weapon Selected for Accusation
-        suspect_selector(QtWidgets.QComboBox): Dropdown for selecting suspects
-        room_selector(QtWidgets.QComboBox): Dropdown for selecting rooms
-        weapon_selector(QtWidgets.QComboBox): Dropdown for selecting weapons
+        person (str): Suspect Selected for Accusation
+        place (str): Room Selected for Accusation
+        thing (str): Weapon Selected for Accusation
+        suspect_selector (QtWidgets.QComboBox): Dropdown for selecting suspects
+        room_selector (QtWidgets.QComboBox): Dropdown for selecting rooms
+        weapon_selector (QtWidgets.QComboBox): Dropdown for selecting weapons
     """
 
     def __init__(self, parent):
@@ -527,7 +528,12 @@ class SuggestionWidget(QtWidgets.QDialog):
     """Create a form for making Accusations
 
     Attributes:
-        aaaaaaaaaaaaaaaaaaaaaaaaa
+        person (str): Suspect Selected for Accusation
+        place (str): Room Selected for Accusation
+        thing (str): Weapon Selected for Accusation
+        suspect_selector (QtWidgets.QComboBox): Dropdown for selecting suspects
+        room (str): Room the player is currently in
+        weapon_selector (QtWidgets.QComboBox): Dropdown for selecting weapons
     """
 
     def __init__(self, parent, room):
@@ -581,12 +587,12 @@ class SuggestionWidget(QtWidgets.QDialog):
             super().accept()
 
 
-
 class ResponseWidget(QtWidgets.QDialog):
     """Create a form for making Accusations
 
     Attributes:
-        aaaaaaaaaaaaaaaaaa
+        card (str): Name of card selected
+        card_selector (QtWidgets.QComboBox): Dropdown for selecting card from hand
     """
 
     def __init__(self, parent, cards):
@@ -596,7 +602,6 @@ class ResponseWidget(QtWidgets.QDialog):
 
         form = QtWidgets.QFormLayout()
         self.card_selector = QtWidgets.QComboBox(self)
-        cards = cards
         self.card_selector.add_items(['None'] + cards)
         form.add_row(QtWidgets.QLabel('Card'), self.card_selector)
 
