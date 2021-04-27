@@ -2,7 +2,7 @@ const {Turn, turnPhases} = require("./turn");
 const {Player} = require("./player");
 const {shuffle} = require("../helpers/cardManagement");
 const {suspectCards, weaponCards, roomCards} = require("../collections/cards");
-const app = require('../app')
+const app = require('../app');
 const {weaponList} = require("../collections/weapons");
 const {suspects} = require("../collections/suspects");
 const {locations} = require("../collections/locations");
@@ -11,7 +11,7 @@ const possibleLocations = locations.filter(location => location.suggestionsAllow
 const possibleSuspects = suspects.map(suspect => suspect.name)
 
 const Game = class Game{
-  static allInstances = []
+  static allInstances = [];
 
   constructor(name, password = undefined) {
     this.id = Game.newId();

@@ -9,7 +9,7 @@
     "jasmine": "jasmine JASMINE_CONFIG_PATH=tests/jasmine.json",
     "generate": "node generate.js",
     "coverage": "npm run generate  && nyc npm run jasmine",
-    "lint": "eslint routes handlers start.js"
+    "lint": "eslint routes handlers collections helpers start.js"
   },
   "keywords": [],
   "author": "",
@@ -24,7 +24,7 @@
     "uuid": "^3.4.0"
   },
   "devDependencies": {
-    "eslint": "^7.21.0",
+    "eslint": "^7.25.0",
     "eslint-config-google": "^0.14.0",
     "glob": "^7.1.6",
     "jasmine": "^3.6.4",
