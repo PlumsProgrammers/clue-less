@@ -47,11 +47,19 @@ exports.Turn = class {
   endTurn() {
     this.#nextPlayer()
     this.phase = turnPhases.MOVEMENT
+    this.notifyPlayerOfTurn()
   }
 
   movePlayer(location) {
     this.currentPlayer.location = getLocationByName(location)
     this.phase = turnPhases.SUGGESTION
+    if (this.currentPlayer.location.suggestionsAllowed) {
+      this.currentPlayer.broadcast(`You are now in ${this.currentPlayer.location.name}, would you like to make a suggestion?`)
+    }
+  }
+
+  notifyPlayerOfTurn() {
+    this.broadcast(`${this.currentPlayer.username} it is your turn.`)
   }
 
   // Private

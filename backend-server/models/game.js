@@ -53,6 +53,7 @@ const Game = class Game{
     this.#setupCards();
     this.#setupTurn();
     this.status = 'playing'
+    this.turn.notifyPlayerOfTurn()
   }
 
   addPlayer = (username, password = null) => {
