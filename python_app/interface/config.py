@@ -33,7 +33,10 @@ class Router(Enum):
 
     SET_CHARACTER = 6
     MOVE = 7
-    ACCUSATION = 8
+    SUGGESTION = 8
+    RESPONSE = 9
+    ACCUSATION = 10
+    ENDTURN = 11
 
     @staticmethod
     def get_path(route=None):
@@ -49,7 +52,10 @@ class Router(Enum):
                  Router.SET_CHARACTER: 'players/selectSuspect',
 
                  Router.MOVE: 'gameplay/move',
-                 Router.ACCUSATION: 'gameplay/accusation'}
+                 Router.SUGGESTION: 'gameplay/suggestion',
+                 Router.RESPONSE: 'gameplay/suggestion_response',
+                 Router.ACCUSATION: 'gameplay/accusation',
+                 Router.ENDTURN: 'gameplay/end_turn'}
         return paths.get(route, None)
 
     @staticmethod
@@ -67,10 +73,19 @@ class Router(Enum):
                        Router.MOVE: {'gameId': game.game_id,
                                      'username': player.username,
                                      'location': player.location},
+                       Router.SUGGESTION: {'gameId': game.game_id,
+                                           'username': player.username,
+                                           'suggestion': {'suspect': player.guess[0],
+                                                          'room': player.guess[1],
+                                                          'weapon': player.guess[2]}},
+                       Router.RESPONSE: {'gameId': game.game_id,
+                                         'username': player.username},
                        Router.ACCUSATION: {'gameId': game.game_id,
                                            'username': player.username,
                                            'accusation': {'suspect': player.guess[0],
                                                           'room': player.guess[1],
-                                                          'weapon': player.guess[2]}}
+                                                          'weapon': player.guess[2]}},
+                       Router.ENDTURN: {'gameId': game.game_id,
+                                        'username': player.username},
                        }
         return json_params.get(route, None)
