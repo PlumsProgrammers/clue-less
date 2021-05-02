@@ -8,7 +8,7 @@
     "test": "npm run lint && npm run coverage",
     "jasmine": "jasmine JASMINE_CONFIG_PATH=tests/jasmine.json",
     "generate": "node generate.js",
-    "coverage": "npm run generate  && nyc npm run jasmine",
+    "coverage": "nyc npm run jasmine",
     "lint": "eslint routes handlers collections helpers start.js"
   },
   "keywords": [],
