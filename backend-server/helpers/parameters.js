@@ -18,6 +18,8 @@ exports.parameterCheck = (req, requiredParams) => {
 exports.paramsRequiredMessage = (requiredParams) => {
   if (requiredParams.length === 1) {
     return `${requiredParams[0]} is required.`;
+  } else if (requiredParams.length === 2) {
+    return `${requiredParams.join(' and ')} are required.`;
   } else {
     return `${requiredParams.slice(0, -1).join(', ')}, and ${requiredParams[requiredParams.length - 1]} are required.`;
   }
