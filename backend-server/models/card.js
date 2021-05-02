@@ -3,4 +3,4 @@ exports.Card = class {
     this.name = name;
     this.type = type;
   }
-}
+};
