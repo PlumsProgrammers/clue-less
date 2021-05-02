@@ -17,7 +17,7 @@ jobs:
     - run: npm install
       working-directory: ./backend-server
     - name: Analysing the code with eslin
-      working-directory: ./backend-servert
+      working-directory: ./backend-server
       run: npm run lint
     - name: Tests and Coverage
       working-directory: ./backend-server
