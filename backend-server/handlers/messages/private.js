@@ -7,7 +7,7 @@ module.exports = (req, res) => {
     try {
       const game = Game.find(req.body.gameId);
       const targetPlayer = game.players.find((player) => {
-        player.username = req.body.targetUsername;
+        return player.username === req.body.targetUsername;
       });
       targetPlayer.broadcast(
           `${req.body.username}: ${req.body.message}`,

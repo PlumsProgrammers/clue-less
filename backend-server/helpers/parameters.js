@@ -19,7 +19,6 @@ exports.paramsRequiredMessage = (requiredParams) => {
   if (requiredParams.length === 1) {
     return `${requiredParams[0]} is required.`;
   } else {
-    return `${requiredParams.slice(0, -1).join(', ')}, \
-    and ${requiredParams[-1]} are required.`;
+    return `${requiredParams.slice(0, -1).join(', ')}, and ${requiredParams[requiredParams.length - 1]} are required.`;
   }
 };
