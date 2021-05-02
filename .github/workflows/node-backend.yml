@@ -14,7 +14,7 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: '14'
-    - run: cd backend
+    - run: cd backend-server
     - run: npm install
     - name: Analysing the code with eslint
       run: npm lint
