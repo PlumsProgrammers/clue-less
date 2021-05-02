@@ -17,6 +17,6 @@ jobs:
     - run: cd backend-server
     - run: npm install
     - name: Analysing the code with eslint
-      run: npm lint
+      run: npm run lint
     - name: Tests and Coverage
-      run: npm test
+      run: npm run test
