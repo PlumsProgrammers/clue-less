@@ -1,0 +1,22 @@
+name: Node Backend application
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - run: cd backend
+    - run: npm install
+    - name: Analysing the code with eslint
+      run: npm lint
+    - name: Tests and Coverage
+      run: npm test
