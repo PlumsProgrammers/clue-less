@@ -115,6 +115,8 @@ class PlayerPiece(GamePiece):
                         QtWidgets.QMessageBox.information(self.parent,
                                                           'Success',
                                                           message)
+                        if new_room in Rooms.get_room_list():
+                            self.parent.parent.action_widget.make_suggestion()
                     else:
                         QtWidgets.QMessageBox.warning(self.parent,
                                                       'Oops',
@@ -181,11 +183,12 @@ class BoardWidget(QtWidgets.QFrame):  # pylint: disable=too-many-instance-attrib
 
     def __init__(self, parent, image_mgr):
         super().__init__()
-        parent.splitterMoved.connect(self.resize)
+        self.parent = parent
+        self.parent.splitterMoved.connect(self.resize)
         self.frame_shape = QtWidgets.QFrame.StyledPanel
         self.accept_drops = True
 
-        self.game_instance = parent.game_instance
+        self.game_instance = self.parent.game_instance
         self._image_mgr = image_mgr
         self.suspect_positions = Suspects.get_starting_positions()
         self.room_locations = {}
@@ -475,7 +478,7 @@ class GameWidget(QtWidgets.QSplitter):
         self.hand_widget.add_cards(hand)
 
 
-class AccusationWidget(QtWidgets.QDialog):
+class AccusationWidget(QtWidgets.QDialog):  # pylint: disable=too-many-instance-attributes # Counting QDialog attrs
     """Create a form for making Accusations
 
     Attributes:
@@ -493,6 +496,8 @@ class AccusationWidget(QtWidgets.QDialog):
         self.person = None
         self.place = None
         self.thing = None
+
+        self.window_title = 'Make An Accusation'
 
         form = QtWidgets.QFormLayout()
         self.suspect_selector = QtWidgets.QComboBox(self)
@@ -539,7 +544,7 @@ class AccusationWidget(QtWidgets.QDialog):
             super().accept()
 
 
-class SuggestionWidget(QtWidgets.QDialog):
+class SuggestionWidget(QtWidgets.QDialog):  # pylint: disable=too-many-instance-attributes # Counting QDialog attrs
     """Create a form for making Accusations
 
     Attributes:
@@ -557,6 +562,8 @@ class SuggestionWidget(QtWidgets.QDialog):
         self.person = None
         self.place = None
         self.thing = None
+
+        self.window_title = 'Make A Suggestion'
 
         form = QtWidgets.QFormLayout()
         self.suspect_selector = QtWidgets.QComboBox(self)
@@ -614,6 +621,8 @@ class ResponseWidget(QtWidgets.QDialog):
         super().__init__(parent)
         self._parent = parent
         self.card = None
+
+        self.window_title = 'Respond to Suggestion'
 
         form = QtWidgets.QFormLayout()
         self.card_selector = QtWidgets.QComboBox(self)
