@@ -1,16 +1,16 @@
-const {paramsRequiredMessage, parameterCheck} = require("../../helpers/parameters");
+const {paramsRequiredMessage, parameterCheck} = require('../../helpers/parameters');
 const _ = require('lodash');
-const {Game} = require("../../models/game");
+const {Game} = require('../../models/game');
 
-const requiredParams = ['name']
-const optionalParams = ['password']
+const requiredParams = ['name'];
+const optionalParams = ['password'];
 module.exports = (req, res) => {
   if (parameterCheck(req, requiredParams)) {
-    let attributes = _.pick(req.body, requiredParams.concat(optionalParams))
-    res.status(201)
-    res.json(new Game(attributes.name, attributes.password))
+    const attributes = _.pick(req.body, requiredParams.concat(optionalParams));
+    res.status(201);
+    res.json(new Game(attributes.name, attributes.password));
   } else {
-    res.status(400)
-    res.json(paramsRequiredMessage(requiredParams))
+    res.status(400);
+    res.json(paramsRequiredMessage(requiredParams));
   }
-}
+};

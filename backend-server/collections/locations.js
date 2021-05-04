@@ -1,10 +1,10 @@
-const {Location} = require('../models/location')
+const {Location} = require('../models/location');
 
 const locations = [
   new Location('Ballroom', true, [
     'Ballroom-Billiard Room-Hallway',
     'Ballroom-Conservatory-Hallway',
-    'Ballroom-Kitchen-Hallway'
+    'Ballroom-Kitchen-Hallway',
   ]),
   new Location('Ballroom-Billiard Room-Hallway', false, [
     'Ballroom',
@@ -25,75 +25,77 @@ const locations = [
   ]),
   new Location('Billiard Room-Dining Room-Hallway', false, [
     'Billiard Room',
-    'Dining Room'
+    'Dining Room',
   ]),
   new Location('Billiard Room-Hall-Hallway', false, [
     'Billiard Room',
-    'Hall'
+    'Hall',
   ]),
   new Location('Billiard Room-Library-Hallway', false, [
     'Billiard Room',
-    'Library'
+    'Library',
   ]),
   new Location('Conservatory', true, [
     'Lounge',
     'Ballroom-Conservatory-Hallway',
-    'Conservatory-Library-Hallway'
+    'Conservatory-Library-Hallway',
   ]),
   new Location('Conservatory-Library-Hallway', false, [
     'Conservatory',
-    'Library'
+    'Library',
   ]),
   new Location('Dining Room', true, [
     'Billiard Room-Dining Room-Hallway',
     'Dining Room-Kitchen-Hallway',
-    'Dining Room-Lounge-Hallway'
+    'Dining Room-Lounge-Hallway',
   ]),
   new Location('Dining Room-Kitchen-Hallway', false, [
     'Dining Room',
-    'Kitchen'
+    'Kitchen',
   ]),
   new Location('Dining Room-Lounge-Hallway', false, [
     'Dining Room',
-    'Lounge'
+    'Lounge',
   ]),
   new Location('Hall', true, [
     'Billiard Room-Hall-Hallway',
     'Hall-Lounge-Hallway',
-    'Hall-Study-Hallway'
+    'Hall-Study-Hallway',
   ]),
   new Location('Hall-Lounge-Hallway', false, [
     'Hall',
-    'Lounge'
+    'Lounge',
   ]),
   new Location('Hall-Study', false, [
     'Hall',
-    'Study'
+    'Study',
   ]),
   new Location('Kitchen', true, [
     'Study',
     'Ballroom-Kitchen-Hallway',
-    'Dining Room-Kitchen-Hallway'
+    'Dining Room-Kitchen-Hallway',
   ]),
   new Location('Library', true, [
     'Billiard Room-Library-Hallway',
     'Conservatory-Library-Hallway',
-    'Library-Study-Hallway'
+    'Library-Study-Hallway',
   ]),
   new Location('Library-Study-Hallway', false, [
     'Library',
-    'Study'
+    'Study',
   ]),
   new Location('Lounge', true, [
     'Conservatory',
     'Dining Room-Lounge-Hallway',
-    'Hall-Lounge-Hallway'
+    'Hall-Lounge-Hallway',
   ]),
   new Location('Study', true, [
     'Kitchen',
     'Hall-Study-Hallway',
-    'Library-Study-Hallway'
-  ])
-]
-exports.locations = locations
-exports.getLocationByName = (name) => locations.find(location => location.name === name)
+    'Library-Study-Hallway',
+  ]),
+];
+exports.locations = locations;
+exports.getLocationByName = (name) => {
+  return locations.find((location) => location.name === name);
+};

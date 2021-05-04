@@ -1,2 +1,15 @@
 'use strict';
+require('../handlers/gameplay/accusation.js');
+require('../handlers/gameplay/endTurn.js');
+require('../handlers/gameplay/move.js');
+require('../handlers/gameplay/suggestion.js');
+require('../handlers/gameplay/suggestionResponse.js');
+require('../handlers/games/index.js');
+require('../handlers/games/join.js');
+require('../handlers/games/post.js');
+require('../handlers/games/start.js');
 require('../handlers/index/about.js');
+require('../handlers/index/test_connection.js');
+require('../handlers/messages/game.js');
+require('../handlers/messages/private.js');
+require('../handlers/players/selectSuspect.js');
