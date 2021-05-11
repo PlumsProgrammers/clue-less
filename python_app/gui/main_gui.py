@@ -167,6 +167,10 @@ class MainWindow(QtWidgets.QMainWindow):  # pylint: disable=too-many-instance-at
 
         self.update_game_info_text()
 
+        result, player_dict = self.get_player_locs()
+        if result:
+            self.chat_gui.set_tabs(player_dict.keys())
+
     def check_game_status(self):
         """Check Status of Current Game"""
         result, message = self.game_instance.check_game_status()
@@ -181,6 +185,15 @@ class MainWindow(QtWidgets.QMainWindow):  # pylint: disable=too-many-instance-at
         self.game_gui.update_cards(self.game_instance.player.hand)
 
         self.update_game_info_text()
+
+        result, player_dict = self.get_player_locs()
+        if result:
+            self.chat_gui.set_tabs(player_dict.keys())
+
+    def get_player_locs(self):
+        """Get dictionary of players and locations"""
+        result, player_dict = self.game_instance.get_player_locs()
+        return result, player_dict
 
     def end_turn(self):
         """Notifies server that turn is complete"""
@@ -201,7 +214,7 @@ class MainWindow(QtWidgets.QMainWindow):  # pylint: disable=too-many-instance-at
 
     def socket_message(self, msg_type, message):  # pylint: disable=no-self-use # update when messaging added
         """Handles Event notifications from websocket"""
-        print(msg_type, message)
+        self.chat_gui.receive_message(msg_type, message)
 
 
 class JoinMenu(QtWidgets.QDialog):
