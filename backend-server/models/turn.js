@@ -38,7 +38,7 @@ exports.Turn = class {
       }
     } else {
       this.currentPlayer.broadcast(`${this.suggestTo.username} shows you: ${card}`);
-      this.broadcast(`${this.suggestTo.username} shows ${this.currentPlayer} some evidence.`);
+      this.broadcast(`${this.suggestTo.username} shows ${this.currentPlayer.username} some evidence.`);
       this.suggestTo = null;
       this.currentSuggestion = {};
     }
