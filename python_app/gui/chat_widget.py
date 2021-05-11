@@ -40,7 +40,6 @@ class ChatWidget(QtWidgets.QFrame):
 
     def receive_message(self, msg_type, message):
         """Add received message to chat window"""
-        print(message)
         _, sender, message = message.split(':')
         if msg_type == 'group':
             tab = self.tab_indexes['Game']

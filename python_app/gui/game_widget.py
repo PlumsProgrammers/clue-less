@@ -31,7 +31,7 @@ class GamePiece(QtWidgets.QLabel):
         super().__init__(parent)
         self.parent = parent
         self.suspect = suspect
-        self.image = image_mgr.get_image('piece')  # change to suspect
+        self.image = image_mgr.get_image(suspect + ' piece')
         self.ratio = self.image.size().width() / self.image.size().height()
         self.resize(self.image.size())
 
@@ -99,7 +99,6 @@ class PlayerPiece(GamePiece):
         if self._moving:
             old_room = self.parent.suspect_positions[self.suspect]
             new_room = self.parent.find_closest_room(self._mouse_move_pos)
-            print(old_room, new_room)
             self.parent.move_suspect(self.suspect, new_room)
             if old_room != new_room:
                 move_alert = QtWidgets.QMessageBox()
@@ -113,12 +112,10 @@ class PlayerPiece(GamePiece):
                     result, message = self.parent.game_instance.move_player(
                         new_room)
                     if result:
-                        print(message)
                         QtWidgets.QMessageBox.information(self.parent,
                                                           'Success',
                                                           message)
                     else:
-                        print('oops')
                         QtWidgets.QMessageBox.warning(self.parent,
                                                       'Oops',
                                                       message)
@@ -202,6 +199,7 @@ class BoardWidget(QtWidgets.QFrame):  # pylint: disable=too-many-instance-attrib
 
         self.set_layout(layout)
         self.update_room_positions()
+        self.set_npc_positions(self.suspect_positions)
 
     def resize(self):
         """Resize object to fit Image"""
@@ -219,6 +217,23 @@ class BoardWidget(QtWidgets.QFrame):  # pylint: disable=too-many-instance-attrib
             self.room_locations = {room: (x_0 + width*pos[0],
                                           y_0 + height*pos[1])
                                    for room, pos in self.rel_pos.items()}
+
+    def set_npc_positions(self, positions):
+        """Place pieces on board"""
+        for suspect, location in positions.items():
+            piece = GamePiece(self, self._image_mgr, suspect)
+            old = self.game_pieces.pop(suspect, None)
+            if old:
+                old.hide()
+            self.game_pieces[suspect] = piece
+            self.move_suspect(suspect, location)
+            self.resize()
+
+    def update_all_positions(self):
+        """Moves all positions on the board"""
+        _, locs = self.game_instance.get_player_locs()
+        for values in locs.values():
+            self.move_suspect(values['suspect'], values['location'])
 
     def set_player(self, suspect):
         """Creates movable piece based on player suspect"""

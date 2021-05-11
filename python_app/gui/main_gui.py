@@ -212,6 +212,8 @@ class MainWindow(QtWidgets.QMainWindow):  # pylint: disable=too-many-instance-at
             # Add actions here based on message content
             pass
 
+        self.game_gui.game_board.update_all_positions()
+
     def socket_message(self, msg_type, message):  # pylint: disable=no-self-use # update when messaging added
         """Handles Event notifications from websocket"""
         self.chat_gui.receive_message(msg_type, message)
