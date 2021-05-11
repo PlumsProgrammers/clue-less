@@ -41,6 +41,8 @@ class Router(Enum):
     PUBLIC = 12
     PRIVATE = 13
 
+    SUSPECT = 14
+
     @staticmethod
     def get_path(route=None):
         """Sets dictionary for Clue-less server paths"""
@@ -61,7 +63,9 @@ class Router(Enum):
                  Router.ENDTURN: 'gameplay/end_turn',
 
                  Router.PUBLIC: 'messages/game',
-                 Router.PRIVATE: 'messages/private'}
+                 Router.PRIVATE: 'messages/private',
+
+                 Router.SUSPECT: 'players/selectSuspect'}
         return paths.get(route, None)
 
     @staticmethod
@@ -101,5 +105,8 @@ class Router(Enum):
                                         'username': player.username,
                                         'targetUsername': None,
                                         'message': None},
+                       Router.SUSPECT: {'gameId': game.game_id,
+                                        'username': player.username,
+                                        'suspect': player.suspect}
                        }
         return json_params.get(route, None)

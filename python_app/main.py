@@ -41,6 +41,7 @@ def main():
                                     app.primary_screen.size.width(),
                                     app.primary_screen.size.height())
         if gui.show():
+            gui.show_suspect_select_menu()
             app.exec_()
             gui.socket.end_connection()
 
