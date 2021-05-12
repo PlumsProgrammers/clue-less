@@ -14,6 +14,7 @@ class WebSocket(QtCore.QThread):
         self.gui = None
         self.game_instance = None
         self.socket = socketio.Client()
+        self.waiting = False
 
     def setup(self, gui, game, config):
         """Sets up required attributes for connecting to game
@@ -81,21 +82,33 @@ def disconnect():
 def game_event(data):
     """Method handles all Game events"""
     if thread.game_instance is not None:
+        while thread.waiting:
+            continue
+        thread.waiting = True
         thread.gui.socket_event(event_type='event',
                                 event=f'Message: {data}')
+        thread.waiting = False
 
 
 @ sio.on('message')
 def group_message(data):
     """Method handles all Whole Game messages"""
     if thread.game_instance is not None:
+        while thread.waiting:
+            continue
+        thread.waiting = True
         thread.gui.socket_message(msg_type='group',
                                   message=f'Message: {data}')
+        thread.waiting = False
 
 
 @ sio.on('private')
 def private_message(data):
     """Method handles all Private message"""
     if thread.game_instance is not None:
+        while thread.waiting:
+            continue
+        thread.waiting = True
         thread.gui.socket_message(msg_type='private',
                                   message=f'Message: {data}')
+        thread.waiting = False

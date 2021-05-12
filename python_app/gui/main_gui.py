@@ -353,6 +353,7 @@ class CharacterSelect(QtWidgets.QDialog):
 
     def __init__(self, parent):
         super().__init__(parent)
+        self.window_title = 'Select Suspect'
         self._parent = parent
         self.suspect = None
 
@@ -362,7 +363,7 @@ class CharacterSelect(QtWidgets.QDialog):
         self.suspect_selector.add_items(['Random'] + suspects)
         form.add_row(QtWidgets.QLabel('Suspects'), self.suspect_selector)
 
-        accept_button = QtWidgets.QPushButton('Respond', self)
+        accept_button = QtWidgets.QPushButton('Select', self)
         self.connect(accept_button,
                      QtCore.SIGNAL('clicked()'),
                      self.accept)
