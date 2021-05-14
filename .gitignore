@@ -137,3 +137,5 @@ backend-server/.nyc_output
 
 ### Node Modules ###
 backend-server/node_modules
+
+.vscode*

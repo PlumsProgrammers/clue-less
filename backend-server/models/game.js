@@ -126,7 +126,7 @@ const Game = class Game{
     if (this.status !== 'playing') throw new Error('Game is not in progress.');
     if (guessingPlayer.username !== username) throw new Error('Not your turn.');
 
-    this.broadcast(`${guessingPlayer.username} is making an accusation of: ${accusation}`);
+    this.broadcast(`${guessingPlayer.username} is making an accusation of: ${JSON.stringify(accusation)}`);
     if (this.#checkSolution(accusation)) {
       this.status = 'Finished';
       this.winner = guessingPlayer;
