@@ -164,7 +164,13 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
             for game in response.json():
                 if game['id'] == self.game_id:
                     for player in game['players']:
-                        player_dict[player['username']] = player['location']
+                        loc = player['location']
+                        place = ''
+                        if loc:
+                            place = loc['name']
+                        player_dict[player['username']] = {'location': place}
+                        player_dict[player['username']
+                                    ]['suspect'] = player['suspect']
             return True, player_dict
         return False, player_dict
 
