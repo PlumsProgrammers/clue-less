@@ -154,6 +154,20 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
             return False, response.json()
         return False, 'Unknown Error'
 
+    def get_player_locs(self):
+        """Get a dictionary of player locations"""
+        game_info_path = os.path.join(self.config.get_host(),
+                                      Router.get_path(Router.CHECK_GAME_STATUS))
+        response = requests.get(game_info_path)
+        player_dict = {}
+        if response.status_code == 200:
+            for game in response.json():
+                if game['id'] == self.game_id:
+                    for player in game['players']:
+                        player_dict[player['username']] = player['location']
+            return True, player_dict
+        return False, player_dict
+
     def make_suggestion(self, person, place, thing):
         """Make Accusation"""
         self.player.guess = (person, place, thing)
@@ -173,7 +187,7 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
     def suggestion_response(self, card=None):
         """Make Accusation"""
         reponse_path = os.path.join(self.config.get_host(),
-                                       Router.get_path(Router.RESPONSE))
+                                    Router.get_path(Router.RESPONSE))
         json = Router.get_json_params(game=self,
                                       player=self.player,
                                       route=Router.RESPONSE)
@@ -213,7 +227,7 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
     def end_turn(self):
         """Notify Sever that turn is complete"""
         end_turn_path = os.path.join(self.config.get_host(),
-                                       Router.get_path(Router.ENDTURN))
+                                     Router.get_path(Router.ENDTURN))
         response = requests.put(end_turn_path,
                                 json=Router.get_json_params(game=self,
                                                             player=self.player,
@@ -230,3 +244,26 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
         about_page = os.path.join(self.config.get_host(),
                                   Router.get_path(Router.ABOUT))
         return requests.get(about_page).json()
+
+    def send_public_message(self, message):
+        """Send Public Message"""
+        message_path = os.path.join(self.config.get_host(),
+                                    Router.get_path(Router.PUBLIC))
+        json = Router.get_json_params(game=self,
+                                      player=self.player,
+                                      route=Router.PUBLIC)
+        json['message'] = message
+        requests.post(message_path,
+                      json=json)
+
+    def send_private_message(self, player, message):
+        """Send Public Message"""
+        message_path = os.path.join(self.config.get_host(),
+                                    Router.get_path(Router.PRIVATE))
+        json = Router.get_json_params(game=self,
+                                      player=self.player,
+                                      route=Router.PRIVATE)
+        json['targetUsername'] = player
+        json['message'] = message
+        requests.post(message_path,
+                      json=json)
