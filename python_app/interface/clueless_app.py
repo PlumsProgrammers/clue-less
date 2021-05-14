@@ -98,6 +98,22 @@ class Clueless:  # pylint: disable=too-many-instance-attributes # All attrs requ
             return False, response.json()
         return False, 'Unknown Error'
 
+    def select_suspect(self, suspect):
+        """Select Player Suspect"""
+        self.player.suspect = suspect
+        select_suspect_path = os.path.join(self.config.get_host(),
+                                           Router.get_path(Router.SUSPECT))
+        response = requests.put(select_suspect_path,
+                                json=Router.get_json_params(game=self,
+                                                            player=self.player,
+                                                            route=Router.SUSPECT)
+                                )
+        if response.status_code == 200:
+            return True, f'{suspect} selected'
+        if response.status_code == 400:
+            return False, response.json()
+        return False, 'Unknown Error'
+
     def start_game(self):
         """Starts connected game if enough players are present"""
         start_game_path = os.path.join(self.config.get_host(),

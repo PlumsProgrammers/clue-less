@@ -14,6 +14,7 @@ class WebSocket(QtCore.QThread):
         self.gui = None
         self.game_instance = None
         self.socket = socketio.Client()
+        self.waiting = False
 
     def setup(self, gui, game, config):
         """Sets up required attributes for connecting to game
@@ -88,34 +89,46 @@ def disconnect():
 @ sio.on('game')
 def game_event(data):
     """Method handles all Game events"""
-    try:
-        if thread.game_instance is not None:
+    if thread.game_instance is not None:
+        while thread.waiting:
+            continue
+        thread.waiting = True
+        try:
             thread.gui.socket_event(event_type='event',
                                     event=f'Message: {data}')
+            thread.waiting = False
 
-    except Exception as error:
-        print('Socket Exception in game_event!', error)
+        except Exception as error:
+            print('Socket Exception in game_event!', error)
 
 
 @ sio.on('message')
 def group_message(data):
     """Method handles all Whole Game messages"""
-    try:
-        if thread.game_instance is not None:
+    if thread.game_instance is not None:
+        while thread.waiting:
+            continue
+        thread.waiting = True
+        try:
             thread.gui.socket_message(msg_type='group',
                                       message=f'Message: {data}')
+            thread.waiting = False
 
-    except Exception as error:
-        print('Socket Exception in group_message!', error)
+        except Exception as error:
+            print('Socket Exception in group_message!', error)
 
 
 @ sio.on('private')
 def private_message(data):
     """Method handles all Private message"""
-    try:
-        if thread.game_instance is not None:
+    if thread.game_instance is not None:
+        while thread.waiting:
+            continue
+        thread.waiting = True
+        try:
             thread.gui.socket_message(msg_type='private',
                                       message=f'Message: {data}')
+            thread.waiting = False
 
-    except Exception as error:
-        print('Socket Exception in private_message!', error)
+        except Exception as error:
+            print('Socket Exception in private_message!', error)

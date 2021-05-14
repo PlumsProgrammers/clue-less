@@ -7,6 +7,7 @@ from gui.chat_widget import ChatWidget
 from gui.game_widget import GameWidget
 from gui.tracker_widget import ClueTrackerWidget
 
+from interface.game_objects import Suspects
 from interface.web_socket import get_socket
 
 from resources.resource_manager import ImageManager
@@ -138,6 +139,11 @@ class MainWindow(QtWidgets.QMainWindow):  # pylint: disable=too-many-instance-at
         self.connect(about_action,
                      QtCore.SIGNAL('triggered()'),
                      self.show_about_message)
+
+    def show_suspect_select_menu(self):
+        """Shows character selection menu"""
+        suspect_menu = CharacterSelect(self)
+        suspect_menu.exec_()
 
     def show_about_message(self):
         """Show About Message Popup"""
@@ -335,3 +341,58 @@ class JoinMenu(QtWidgets.QDialog):
 
             if not result:
                 QtWidgets.QMessageBox.warning(self, 'Oops', message.title())
+
+
+class CharacterSelect(QtWidgets.QDialog):
+    """Create a form for making Accusations
+
+    Attributes:
+        suspect (str): Name of suspect selected
+        suspect_selector (QtWidgets.QComboBox): Dropdown for selecting suspect
+    """
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.window_title = 'Select Suspect'
+        self._parent = parent
+        self.suspect = None
+
+        form = QtWidgets.QFormLayout()
+        self.suspect_selector = QtWidgets.QComboBox(self)
+        suspects = Suspects.get_suspect_list()
+        self.suspect_selector.add_items(['Random'] + suspects)
+        form.add_row(QtWidgets.QLabel('Suspects'), self.suspect_selector)
+
+        accept_button = QtWidgets.QPushButton('Select', self)
+        self.connect(accept_button,
+                     QtCore.SIGNAL('clicked()'),
+                     self.accept)
+
+        cancel_button = QtWidgets.QPushButton('Cancel', self)
+        self.connect(cancel_button,
+                     QtCore.SIGNAL('clicked()'),
+                     self.reject)
+        form.add_row(accept_button, cancel_button)
+        self.set_layout(form)
+
+    def accept(self):
+        """Override of QDialog accept method, verifies user selections"""
+        self.suspect = self.suspect_selector.current_text
+        if self.suspect == 'Random':
+            super().reject()
+        else:
+            status, message = self._parent.game_instance.select_suspect(
+                self.suspect)
+            if status:
+                QtWidgets.QMessageBox.information(self, 'Success', message)
+                super().accept()
+            else:
+                QtWidgets.QMessageBox.warning(self, 'Oops', message)
+
+    def reject(self):
+        """Override of QDialog reject method, alerts user of random suspect"""
+        self.suspect = None
+        QtWidgets.QMessageBox.information(self,
+                                          'Alert',
+                                          'Random Suspect will be selected')
+        super().reject()
