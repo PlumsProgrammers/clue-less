@@ -10,7 +10,7 @@ class ChatWidget(QtWidgets.QFrame):
     def __init__(self, parent):
         super().__init__()
         self.parent = parent
-        self.own_id = parent.game_instance.player.username
+        self.own_id = None
         self.chat_layout = QtWidgets.QVBoxLayout()
         self.frame_shape = QtWidgets.QFrame.StyledPanel
         self.tabs = QtWidgets.QTabWidget()
@@ -41,15 +41,19 @@ class ChatWidget(QtWidgets.QFrame):
 
     def receive_message(self, msg_type, message):
         """Add received message to chat window"""
-        print(message)
+        if not self.own_id:
+            self.own_id = self.parent.game_instance.player.username
         _, sender, message = message.split(':')
+        sender = sender.strip()
         if sender.strip() != self.own_id:
             if msg_type == 'group':
                 tab = self.tab_indexes['Game']
-                tab.add_msg(sender, message)
             else:
-                tab = self.tab_indexes.get(sender, IndividualChat(None, None))
+                tab = self.tab_indexes.get(sender, None)
+
+            if tab is not None:
                 tab.add_msg(sender, message)
+                self.tabs.set_current_widget(tab)
 
 
 class IndividualChat(QtWidgets.QFrame):
@@ -91,6 +95,8 @@ class IndividualChat(QtWidgets.QFrame):
         text = self.message_box.plain_text
         self._parent.send_message(self.chat_room,
                                   text)
+        if not self._parent.own_id:
+            self._parent.own_id = self._parent.parent.game_instance.player.username
         self.add_msg(self._parent.own_id, text)
         self.message_box.plain_text = ''
 
