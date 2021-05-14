@@ -38,7 +38,10 @@ class WebSocket(QtCore.QThread):
 
     def run(self):
         """Starts socket running in a second thread"""
-        self.socket.wait()
+        try:
+            self.socket.wait()
+        except Exception as error:
+            print('Socket Exception in run!', error)
 
     def end_connection(self):
         """Ends websocket connection and ends second thread"""
@@ -65,6 +68,7 @@ def connect():
 @ sio.event
 def connect_error(error):
     """Method that runs on Websocket connection error"""
+    print('Socket Disconnected')
     if thread.game_instance is not None:
         thread.gui.socket_event(event_type='status',
                                 event=f'Connection Error: {error}')
@@ -73,9 +77,13 @@ def connect_error(error):
 @ sio.event
 def disconnect():
     """Method that runs when Websocket disconnects"""
-    if thread.game_instance is not None:
-        thread.gui.socket_event(event_type='status',
-                                event='Disconnected')
+    try:
+        if thread.game_instance is not None:
+            thread.gui.socket_event(event_type='status',
+                                    event='Disconnected')
+
+    except Exception as error:
+        print('Socket Exception in disconnect!', error)
 
 
 @ sio.on('game')
@@ -85,9 +93,13 @@ def game_event(data):
         while thread.waiting:
             continue
         thread.waiting = True
-        thread.gui.socket_event(event_type='event',
-                                event=f'Message: {data}')
-        thread.waiting = False
+        try:
+            thread.gui.socket_event(event_type='event',
+                                    event=f'Message: {data}')
+            thread.waiting = False
+
+        except Exception as error:
+            print('Socket Exception in game_event!', error)
 
 
 @ sio.on('message')
@@ -97,9 +109,13 @@ def group_message(data):
         while thread.waiting:
             continue
         thread.waiting = True
-        thread.gui.socket_message(msg_type='group',
-                                  message=f'Message: {data}')
-        thread.waiting = False
+        try:
+            thread.gui.socket_message(msg_type='group',
+                                      message=f'Message: {data}')
+            thread.waiting = False
+
+        except Exception as error:
+            print('Socket Exception in group_message!', error)
 
 
 @ sio.on('private')
@@ -109,6 +125,10 @@ def private_message(data):
         while thread.waiting:
             continue
         thread.waiting = True
-        thread.gui.socket_message(msg_type='private',
-                                  message=f'Message: {data}')
-        thread.waiting = False
+        try:
+            thread.gui.socket_message(msg_type='private',
+                                      message=f'Message: {data}')
+            thread.waiting = False
+
+        except Exception as error:
+            print('Socket Exception in private_message!', error)
